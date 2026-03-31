@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: 244 247 243;
+  --color-card: 255 255 255;
+  --color-line: 217 226 220;
+  --color-accent: 22 163 74;
+  --color-ink: 15 23 42;
+  --color-muted: 100 116 139;
+}
+
+.dark {
+  --color-bg: 10 16 22;
+  --color-card: 17 24 39;
+  --color-line: 42 54 68;
+  --color-accent: 74 222 128;
+  --color-ink: 226 232 240;
+  --color-muted: 148 163 184;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  @apply bg-bg text-ink antialiased;
+  background-image:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.12), transparent 28%),
+    radial-gradient(circle at right 20%, rgba(14, 165, 233, 0.08), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0));
+}
+
+.dark body {
+  background-image:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.12), transparent 28%),
+    radial-gradient(circle at right 20%, rgba(59, 130, 246, 0.12), transparent 24%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0));
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.45);
+  border-radius: 999px;
+}

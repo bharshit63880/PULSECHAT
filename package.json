@@ -1,0 +1,45 @@
+{
+  "name": "chat-app",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run build -w @chat-app/shared && concurrently \"npm run dev -w @chat-app/shared\" \"npm run dev -w @chat-app/api\" \"npm run dev -w @chat-app/web\"",
+    "dev:mobile": "npm run dev -w @chat-app/mobile",
+    "build": "npm run build -w @chat-app/shared && npm run build -w @chat-app/api && npm run build -w @chat-app/web",
+    "lint": "npm run lint -w @chat-app/shared && npm run lint -w @chat-app/api && npm run lint -w @chat-app/web",
+    "typecheck": "npm run typecheck -w @chat-app/shared && npm run typecheck -w @chat-app/api && npm run typecheck -w @chat-app/web",
+    "test": "npm run test -w @chat-app/api",
+    "mobile:typecheck": "npm run typecheck -w @chat-app/mobile",
+    "mobile:lint": "npm run lint -w @chat-app/mobile",
+    "format": "prettier --write .",
+    "seed": "npm run seed -w @chat-app/api",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.21.0",
+    "@typescript-eslint/eslint-plugin": "^8.24.1",
+    "@typescript-eslint/parser": "^8.24.1",
+    "concurrently": "^9.1.2",
+    "eslint": "^9.21.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^16.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,json,md}": [
+      "prettier --write"
+    ],
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix"
+    ]
+  }
+}
