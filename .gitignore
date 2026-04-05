@@ -9,4 +9,3 @@ coverage
 apps/web/.env
 apps/api/.env
 *.log
-package-lock.json
