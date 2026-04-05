@@ -16,6 +16,11 @@ export const paginationQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(20),
 });
 
+export const searchQuerySchema = z.object({
+  query: z.string().trim().min(1).max(120),
+  limit: z.coerce.number().int().min(1).max(20).default(12)
+});
+
 export const disappearingModeSchema = z.object({
   seconds: z.union(DISAPPEARING_MESSAGE_OPTIONS.map((option) => z.literal(option)) as [
     z.ZodLiteral<0>,

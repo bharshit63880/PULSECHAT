@@ -139,6 +139,20 @@ Returns paginated ciphertext messages and delivery metadata.
 
 This endpoint requires a verified email.
 
+### `GET /messages/:chatId/search`
+
+Searches messages inside a chat.
+
+Expected query params:
+
+- `query`
+- optional `limit`
+
+Current behavior:
+
+- direct chats only search attachment names server-side safe metadata is available for, while decrypted text search remains local to the client
+- group chats support server-assisted search across group text payloads and attachment names
+
 ### `POST /messages`
 
 Creates a new message for either an encrypted direct chat or a `server-group` chat.
@@ -189,3 +203,8 @@ Uploads a profile avatar.
 Uploads an encrypted attachment blob. The API stores storage metadata only and does not inspect plaintext file contents.
 
 This endpoint requires a verified email.
+
+Current behavior:
+
+- `UPLOAD_PROVIDER=cloudinary` uses Cloudinary storage
+- `UPLOAD_PROVIDER=s3` uses an S3-compatible bucket via the provider abstraction

@@ -1,6 +1,6 @@
 # Pulse Private Messenger
 
-A production-style MERN monorepo for a secure, WhatsApp-inspired private messenger. The current implementation focuses on encrypted direct messaging with browser-side key generation, device-aware sessions, encrypted attachments, local-only search, disappearing timers, reliability-aware Socket.io delivery, and an honest server-group text MVP for group conversations.
+A production-style MERN monorepo for a secure, WhatsApp-inspired private messenger. The current implementation focuses on encrypted direct messaging with browser-side key generation, device-aware sessions, encrypted attachments, hybrid message search, realtime notifications, infinite-scroll history, disappearing timers, reliability-aware Socket.io delivery, and an honest server-group text MVP for group conversations.
 
 ## Features
 
@@ -13,18 +13,24 @@ A production-style MERN monorepo for a secure, WhatsApp-inspired private messeng
 - Encrypted GIF sharing and built-in sticker pack support for direct chats
 - Group chat creation and server-group text messaging MVP for small teams
 - Tabbed media drawer with emoji insertion, GIF search, and encrypted sticker sending
+- Hybrid message search: local decrypted search for direct chats and server-assisted search for group chats
+- In-app notification center with realtime socket notifications and browser notification hooks
+- Infinite-scroll message history loading with optimistic reconciliation
+- Upload provider abstraction with Cloudinary and S3-compatible backends
 - Expo-based mobile app scaffold with secure auth, direct-chat list, mobile thread UI, devices, and settings screens
 - Safety-number verification UX
 - Presence, last seen, typing, reactions, unread counts, delivered/seen states
 - Disappearing message timers for direct chats
 - Local-only search over decrypted content stored in browser IndexedDB
 - Optimistic UI with retry-safe outbox queue and socket acknowledgements
-- Responsive React UI with dark mode, empty/error/loading states
+- Responsive React UI with dark mode, empty/error/loading states, and Framer Motion polish
+- Redis-ready presence and short-lived recent-chat caching with in-memory fallback
+- Docker-ready API + web containers plus local MongoDB/Redis compose stack
 
 ## Stack
 
-- Frontend: React, Vite, TypeScript, Tailwind CSS, React Router, Zustand, TanStack Query, Socket.io client
-- Backend: Node.js, Express, TypeScript, MongoDB, Mongoose, JWT, bcryptjs, Zod, Socket.io, Multer, Cloudinary
+- Frontend: React, Vite, TypeScript, Tailwind CSS, Zustand, TanStack Query, Framer Motion, Socket.io client
+- Backend: Node.js, Express, TypeScript, MongoDB, Mongoose, Redis, JWT, bcryptjs, Zod, Socket.io, Multer, Cloudinary, AWS S3 SDK
 - Shared package: constants, DTOs, Zod schemas, response helpers
 - Crypto: Browser Web Crypto APIs with ECDH P-256 and AES-GCM
 
@@ -50,11 +56,14 @@ A production-style MERN monorepo for a secure, WhatsApp-inspired private messeng
    `npm install`
 2. Copy values from `.env.example` into `.env`
 3. Start MongoDB locally or point `MONGODB_URI` to MongoDB Atlas
-4. Add Cloudinary credentials if you want encrypted attachment uploads
+4. Choose an upload provider:
+   - set `UPLOAD_PROVIDER=cloudinary` and add Cloudinary credentials, or
+   - set `UPLOAD_PROVIDER=s3` and add S3-compatible credentials
 5. Add SMTP credentials if you want real email verification delivery
-6. Seed demo users:
+6. Start Redis locally if you want multi-node-ready presence/cache behavior
+7. Seed demo users:
    `npm run seed`
-7. Start the workspace:
+8. Start the workspace:
    `npm run dev`
 
 Default URLs:
@@ -82,6 +91,10 @@ After `npm run seed`, you can sign in with:
 - `APP_URL`
 - `MONGODB_URI`
 - `JWT_SECRET`
+- `REDIS_URL`
+- `REDIS_KEY_PREFIX`
+- `CHAT_LIST_CACHE_TTL_SEC`
+- `PRESENCE_CACHE_TTL_SEC`
 - `JWT_EXPIRES_IN`
 - `REFRESH_TOKEN_SECRET`
 - `REFRESH_TOKEN_EXPIRES_IN`
@@ -96,9 +109,16 @@ After `npm run seed`, you can sign in with:
 - `SMTP_USER`
 - `SMTP_PASS`
 - `MAIL_FROM`
+- `UPLOAD_PROVIDER`
 - `CLOUDINARY_CLOUD_NAME`
 - `CLOUDINARY_API_KEY`
 - `CLOUDINARY_API_SECRET`
+- `S3_BUCKET`
+- `S3_REGION`
+- `S3_ENDPOINT`
+- `S3_ACCESS_KEY_ID`
+- `S3_SECRET_ACCESS_KEY`
+- `S3_FORCE_PATH_STYLE`
 - `MAX_FILE_SIZE_MB`
 
 ### Web
@@ -131,13 +151,13 @@ See [`.env.example`](/C:/Users/h2883/Downloads/chat-app/.env.example).
 
 ## Architecture Summary
 
-- `apps/web` owns browser crypto, local device keys, decrypted search cache, and the secure chat UX.
+- `apps/web` owns browser crypto, notification UX, infinite-scroll history state, local/group search behavior, local device keys, decrypted search cache, and the secure chat UX.
 - `apps/mobile` owns the React Native / Expo client, secure mobile auth/session storage, mobile-friendly direct-chat surfaces, and the mobile crypto adapter boundary.
-- `apps/api` owns auth, device sessions, public key bundle distribution, ciphertext persistence, uploads, sockets, and disappearing-message cleanup.
+- `apps/api` owns auth, device sessions, public key bundle distribution, ciphertext persistence, search orchestration, notifications fan-out, uploads, sockets, and disappearing-message cleanup.
 - `packages/shared` keeps DTOs, socket names, and Zod schemas aligned between both apps.
 - Group chats currently use the same chat domain with `server-group` mode so the product can support collaboration flows without pretending those messages are end-to-end encrypted.
 
-More detail lives in [architecture.md](/C:/Users/h2883/Downloads/chat-app/docs/architecture.md).
+More detail lives in [architecture.md](/C:/Users/h2883/Downloads/chat-app/docs/architecture.md) and [system-architecture.md](/C:/Users/h2883/Downloads/chat-app/docs/system-architecture.md).
 
 ## E2EE Summary
 
@@ -146,7 +166,8 @@ More detail lives in [architecture.md](/C:/Users/h2883/Downloads/chat-app/docs/a
 - The mobile workspace is scaffolded for the same direct-message E2EE model and uses a dedicated runtime adapter instead of moving crypto into the API.
 - The server stores ciphertext, delivery metadata, device public keys, and encrypted attachment metadata only.
 - Private keys remain client-side only.
-- Local search runs against decrypted browser storage only.
+- Direct-chat search runs against decrypted browser storage only.
+- Group-chat search is explicitly server-assisted for text and attachment names.
 - GIF search, when enabled, queries GIPHY directly from the browser before the selected asset is re-fetched and encrypted for transport.
 
 Important current limitation:
@@ -195,6 +216,7 @@ See [api.md](/C:/Users/h2883/Downloads/chat-app/docs/api.md).
 - `send-message`
 - `receive-message`
 - `message-ack`
+- `notification-created`
 - `typing-start`
 - `typing-stop`
 - `messages-seen`
@@ -207,6 +229,10 @@ See [socket-events.md](/C:/Users/h2883/Downloads/chat-app/docs/socket-events.md)
 ## Deployment Notes
 
 Deployment guidance is documented in [deployment.md](/C:/Users/h2883/Downloads/chat-app/docs/deployment.md).
+
+Local container stack:
+
+- `docker compose up --build`
 
 ## Testing
 

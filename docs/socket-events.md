@@ -144,6 +144,21 @@ Broadcast back to the sender room once the message is persisted.
 }
 ```
 
+### `notification-created`
+
+Delivered to recipient user rooms for chats that are not currently active on that client.
+
+```json
+{
+  "id": "chatId:messageId",
+  "chatId": "66401234567890abcdef123",
+  "title": "Sara Khan",
+  "body": "Sent a new secure message",
+  "messageId": "66401234567890abcdef999",
+  "createdAt": "2026-03-24T10:15:00.000Z"
+}
+```
+
 ### `presence-online`
 
 ```json

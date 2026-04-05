@@ -6,6 +6,7 @@ import { ERROR_CODES } from '../../constants/http';
 import { AppError } from '../../errors/AppError';
 import { ChatModel } from '../../models/Chat';
 import { MessageModel } from '../../models/Message';
+import { cacheService } from '../../services/cache.service';
 import { mapChatDto } from '../../services/mapper.service';
 
 const chatPopulate = [
@@ -55,15 +56,25 @@ export const chatsService = {
       throw new AppError('Chat could not be created', 500, ERROR_CODES.INTERNAL_SERVER_ERROR);
     }
 
+    await cacheService.invalidateChatLists([userId, otherUserId]);
+
     return this.attachUnreadCount(populated, userId);
   },
 
   async listChats(userId: string) {
+    const cached = await cacheService.getCachedChatList<ChatDto[]>(userId);
+
+    if (cached) {
+      return cached;
+    }
+
     const chats = await ChatModel.find({ participants: userId })
       .sort({ lastActivityAt: -1, updatedAt: -1 })
       .populate(chatPopulate);
 
-    return Promise.all(chats.map((chat) => this.attachUnreadCount(chat, userId)));
+    const mappedChats = await Promise.all(chats.map((chat) => this.attachUnreadCount(chat, userId)));
+    await cacheService.setCachedChatList(userId, mappedChats as any);
+    return mappedChats;
   },
 
   async getChatOrThrow(chatId: string, userId: string) {
@@ -150,6 +161,8 @@ export const chatsService = {
     if (!updated) {
       throw new AppError('Chat not found', 404, ERROR_CODES.NOT_FOUND);
     }
+
+    await cacheService.invalidateChatLists(updated.participants.map((participant) => participant.toString()));
 
     return this.attachUnreadCount(updated, userId);
   }

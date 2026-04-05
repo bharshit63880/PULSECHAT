@@ -1,12 +1,15 @@
-import type { ChatDto, MessageDto, PaginationMeta } from '@chat-app/shared';
+import type { ChatDto, ChatNotificationDto, MessageDto, PaginationMeta } from '@chat-app/shared';
 
+import type { InfiniteData } from '@tanstack/react-query';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import { messagesApi } from '@/features/messages/api';
 import { disconnectSocket, getSocket } from '@/lib/socket';
 import { SOCKET_EVENTS } from '@/lib/socket-events';
 import { useAuthStore } from '@/store/auth-store';
+import { useNotificationsStore } from '@/store/notifications-store';
 
 type MessageCache = {
   data: MessageDto[];
@@ -49,12 +52,32 @@ const appendMessage = (cache: MessageCache | undefined, incoming: MessageDto): M
   };
 };
 
+const appendMessageToInfiniteCache = (
+  current: InfiniteData<MessageCache> | undefined,
+  incoming: MessageDto
+): InfiniteData<MessageCache> => {
+  if (!current) {
+    return {
+      pages: [appendMessage(undefined, incoming)],
+      pageParams: [1]
+    };
+  }
+
+  const [firstPage, ...remainingPages] = current.pages;
+
+  return {
+    ...current,
+    pages: [appendMessage(firstPage, incoming), ...remainingPages]
+  };
+};
+
 export const useSocketBridge = (activeChat: ChatDto | null) => {
   const token = useAuthStore((state) => state.token);
   const currentUser = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
   const previousChatIdRef = useRef<string | null>(null);
   const [typingUserIds, setTypingUserIds] = useState<Record<string, string[]>>({});
+  const addNotification = useNotificationsStore((state) => state.add);
 
   useEffect(() => {
     if (!token) {
@@ -76,7 +99,9 @@ export const useSocketBridge = (activeChat: ChatDto | null) => {
     socket.emit(SOCKET_EVENTS.SETUP);
 
     const onReceiveMessage = async ({ chatId, message }: { chatId: string; message: MessageDto }) => {
-      queryClient.setQueryData<MessageCache>(['messages', chatId], (current) => appendMessage(current, message));
+      queryClient.setQueryData<InfiniteData<MessageCache>>(['messages', chatId], (current) =>
+        appendMessageToInfiniteCache(current, message)
+      );
       queryClient.setQueryData<ChatDto[]>(['chats'], (current) =>
         updateChats(current, chatId, (chat) => ({
           ...(chat ?? {
@@ -109,7 +134,26 @@ export const useSocketBridge = (activeChat: ChatDto | null) => {
     };
 
     const onMessageAck = ({ chatId, message }: { chatId: string; message: MessageDto }) => {
-      queryClient.setQueryData<MessageCache>(['messages', chatId], (current) => appendMessage(current, message));
+      queryClient.setQueryData<InfiniteData<MessageCache>>(['messages', chatId], (current) =>
+        appendMessageToInfiniteCache(current, message)
+      );
+    };
+
+    const onNotificationCreated = (notification: ChatNotificationDto) => {
+      if (notification.chatId === activeChat?.id) {
+        return;
+      }
+
+      addNotification(notification);
+      toast(notification.title, {
+        description: notification.body
+      });
+
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        void new Notification(notification.title, {
+          body: notification.body
+        });
+      }
     };
 
     const onPresenceOnline = ({ userId }: { userId: string }) => {
@@ -157,18 +201,27 @@ export const useSocketBridge = (activeChat: ChatDto | null) => {
       userId: string;
       messageIds: string[];
     }) => {
-      queryClient.setQueryData<MessageCache>(['messages', chatId], (current) => ({
-        data: (current?.data ?? []).map((message) =>
-          messageIds.includes(message.id) && !message.seenBy.some((receipt) => receipt.userId === userId)
-            ? {
-                ...message,
-                status: 'seen',
-                seenBy: [...message.seenBy, { userId, seenAt: new Date().toISOString() }]
-              }
-            : message
-        ),
-        meta: current?.meta ?? { page: 1, limit: 40, total: 0, totalPages: 1 }
-      }));
+      queryClient.setQueryData<InfiniteData<MessageCache>>(['messages', chatId], (current) => {
+        if (!current) {
+          return current;
+        }
+
+        return {
+          ...current,
+          pages: current.pages.map((page) => ({
+            ...page,
+            data: page.data.map((message) =>
+              messageIds.includes(message.id) && !message.seenBy.some((receipt) => receipt.userId === userId)
+                ? {
+                    ...message,
+                    status: 'seen',
+                    seenBy: [...message.seenBy, { userId, seenAt: new Date().toISOString() }]
+                  }
+                : message
+            )
+          }))
+        };
+      });
     };
 
     const onConnect = () => {
@@ -176,8 +229,9 @@ export const useSocketBridge = (activeChat: ChatDto | null) => {
         return;
       }
 
-      const cached = queryClient.getQueryData<MessageCache>(['messages', activeChat.id]);
-      const after = cached?.data.at(-1)?.createdAt;
+      const cached = queryClient.getQueryData<InfiniteData<MessageCache>>(['messages', activeChat.id]);
+      const newestPage = cached?.pages[0];
+      const after = newestPage?.data.at(-1)?.createdAt;
 
       if (!after) {
         return;
@@ -192,8 +246,8 @@ export const useSocketBridge = (activeChat: ChatDto | null) => {
           }
 
           payload.messages.forEach((message) => {
-            queryClient.setQueryData<MessageCache>(['messages', activeChat.id], (current) =>
-              appendMessage(current, message)
+            queryClient.setQueryData<InfiniteData<MessageCache>>(['messages', activeChat.id], (current) =>
+              appendMessageToInfiniteCache(current, message)
             );
           });
         }
@@ -202,6 +256,7 @@ export const useSocketBridge = (activeChat: ChatDto | null) => {
 
     socket.on(SOCKET_EVENTS.RECEIVE_MESSAGE, onReceiveMessage);
     socket.on(SOCKET_EVENTS.MESSAGE_ACK, onMessageAck);
+    socket.on(SOCKET_EVENTS.NOTIFICATION_CREATED, onNotificationCreated);
     socket.on(SOCKET_EVENTS.PRESENCE_ONLINE, onPresenceOnline);
     socket.on(SOCKET_EVENTS.PRESENCE_OFFLINE, onPresenceOffline);
     socket.on(SOCKET_EVENTS.TYPING_START, onTypingStart);
@@ -212,6 +267,7 @@ export const useSocketBridge = (activeChat: ChatDto | null) => {
     return () => {
       socket.off(SOCKET_EVENTS.RECEIVE_MESSAGE, onReceiveMessage);
       socket.off(SOCKET_EVENTS.MESSAGE_ACK, onMessageAck);
+      socket.off(SOCKET_EVENTS.NOTIFICATION_CREATED, onNotificationCreated);
       socket.off(SOCKET_EVENTS.PRESENCE_ONLINE, onPresenceOnline);
       socket.off(SOCKET_EVENTS.PRESENCE_OFFLINE, onPresenceOffline);
       socket.off(SOCKET_EVENTS.TYPING_START, onTypingStart);
@@ -219,7 +275,7 @@ export const useSocketBridge = (activeChat: ChatDto | null) => {
       socket.off(SOCKET_EVENTS.MESSAGES_SEEN, onMessagesSeen);
       socket.off('connect', onConnect);
     };
-  }, [activeChat, currentUser?.id, queryClient, token]);
+  }, [activeChat, addNotification, currentUser?.id, queryClient, token]);
 
   useEffect(() => {
     if (!token || !activeChat) {

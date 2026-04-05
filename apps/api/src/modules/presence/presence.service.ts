@@ -2,6 +2,7 @@ import type { Server } from 'socket.io';
 
 import { ChatModel } from '../../models/Chat';
 import { UserModel } from '../../models/User';
+import { cacheService } from '../../services/cache.service';
 import { SOCKET_EVENTS, userRoom } from '../../sockets/socket.constants';
 
 const userSockets = new Map<string, Set<string>>();
@@ -23,8 +24,9 @@ const getPresenceAudience = async (userId: string) => {
 };
 
 export const presenceService = {
-  isUserOnline(userId: string) {
-    return Boolean(userSockets.get(userId)?.size);
+  async isUserOnline(userId: string) {
+    const count = await cacheService.getPresenceCount(userId);
+    return count > 0;
   },
 
   registerSocket(userId: string, socketId: string) {
@@ -35,7 +37,8 @@ export const presenceService = {
   },
 
   async handleConnected(io: Server, userId: string, socketId: string) {
-    const count = this.registerSocket(userId, socketId);
+    this.registerSocket(userId, socketId);
+    const count = await cacheService.incrementPresence(userId);
 
     if (count === 1) {
       await UserModel.findByIdAndUpdate(userId, { isOnline: true, lastSeen: null });
@@ -55,11 +58,15 @@ export const presenceService = {
 
     sockets.delete(socketId);
 
-    if (sockets.size > 0) {
-      return;
+    if (sockets.size === 0) {
+      userSockets.delete(userId);
     }
 
-    userSockets.delete(userId);
+    const count = await cacheService.decrementPresence(userId);
+
+    if (count > 0) {
+      return;
+    }
 
     const lastSeen = new Date();
     await UserModel.findByIdAndUpdate(userId, { isOnline: false, lastSeen });

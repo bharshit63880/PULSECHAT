@@ -6,6 +6,7 @@ export const SOCKET_EVENTS = {
   SEND_MESSAGE: 'send-message',
   RECEIVE_MESSAGE: 'receive-message',
   MESSAGE_ACK: 'message-ack',
+  NOTIFICATION_CREATED: 'notification-created',
   TYPING_START: 'typing-start',
   TYPING_STOP: 'typing-stop',
   MESSAGES_SEEN: 'messages-seen',

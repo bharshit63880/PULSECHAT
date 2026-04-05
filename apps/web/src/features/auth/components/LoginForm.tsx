@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
+import { LockKeyhole, Mail } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -48,7 +49,7 @@ export const LoginForm = () => {
 
   return (
     <form
-      className="w-full max-w-md space-y-5 rounded-[32px] border border-line bg-card p-8 shadow-soft"
+      className="glass-card w-full rounded-[32px] p-7 sm:p-8"
       onSubmit={form.handleSubmit(async (values) => {
         const device = await ensureLocalDevice();
         loginMutation.mutate({
@@ -66,35 +67,60 @@ export const LoginForm = () => {
         });
       })}
     >
-      <div className="space-y-2">
-        <p className="text-sm uppercase tracking-[0.24em] text-muted">Welcome back</p>
-        <h2 className="text-3xl font-bold">Sign in to Pulse Private Messenger</h2>
-        <p className="text-sm text-muted">Use your email and password to reopen your encrypted device session.</p>
-      </div>
-
-      <div className="space-y-4">
-        <div>
-          <label className="mb-2 block text-sm font-medium">Email</label>
-          <Input type="email" placeholder="you@company.com" {...form.register('email')} />
-          <p className="mt-1 text-xs text-rose-500">{form.formState.errors.email?.message}</p>
+      <div className="space-y-3">
+        <div className="inline-flex rounded-full bg-accent-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-accent dark:text-emerald-200">
+          Welcome back
         </div>
         <div>
-          <label className="mb-2 block text-sm font-medium">Password</label>
-          <Input type="password" placeholder="Minimum 8 characters" {...form.register('password')} />
-          <p className="mt-1 text-xs text-rose-500">{form.formState.errors.password?.message}</p>
+          <h2 className="text-balance text-3xl font-semibold tracking-[-0.04em] sm:text-[2rem]">
+            Sign in to your private workspace
+          </h2>
+          <p className="mt-3 text-sm leading-6 text-muted">
+            Use your email and password to reopen this device session and continue your secure conversations.
+          </p>
         </div>
       </div>
 
-      <Button type="submit" fullWidth disabled={loginMutation.isPending}>
-        {loginMutation.isPending ? <Spinner /> : 'Sign in'}
-      </Button>
+      <div className="mt-8 space-y-4">
+        <div>
+          <label className="mb-2 block text-sm font-semibold text-ink">Email</label>
+          <div className="relative">
+            <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+            <Input type="email" placeholder="you@company.com" className="pl-11" {...form.register('email')} />
+          </div>
+          <p className="mt-1.5 text-xs text-rose-500">{form.formState.errors.email?.message}</p>
+        </div>
+        <div>
+          <label className="mb-2 block text-sm font-semibold text-ink">Password</label>
+          <div className="relative">
+            <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+            <Input
+              type="password"
+              placeholder="Minimum 8 characters"
+              className="pl-11"
+              {...form.register('password')}
+            />
+          </div>
+          <p className="mt-1.5 text-xs text-rose-500">{form.formState.errors.password?.message}</p>
+        </div>
+      </div>
 
-      <p className="text-sm text-muted">
-        New here?{' '}
-        <Link to="/register" className="font-semibold text-accent">
-          Create an account
-        </Link>
-      </p>
+      <div className="mt-8 space-y-4">
+        <Button type="submit" fullWidth disabled={loginMutation.isPending} className="min-h-12 rounded-2xl">
+          {loginMutation.isPending ? <Spinner /> : 'Sign in'}
+        </Button>
+
+        <div className="rounded-[24px] surface-muted px-4 py-3 text-xs leading-6 text-muted">
+          This device keeps your direct-chat keys local and restores your session with rotating refresh credentials.
+        </div>
+
+        <p className="text-sm text-muted">
+          New here?{' '}
+          <Link to="/register" className="font-semibold text-accent transition hover:text-accent/80">
+            Create an account
+          </Link>
+        </p>
+      </div>
     </form>
   );
 };

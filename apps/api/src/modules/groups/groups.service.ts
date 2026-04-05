@@ -1,6 +1,7 @@
 import { ERROR_CODES } from '../../constants/http';
 import { AppError } from '../../errors/AppError';
 import { ChatModel } from '../../models/Chat';
+import { cacheService } from '../../services/cache.service';
 import { mapChatDto } from '../../services/mapper.service';
 import { chatsService } from '../chats/chats.service';
 
@@ -42,6 +43,8 @@ export const groupsService = {
       throw new AppError('Group could not be created', 500, ERROR_CODES.INTERNAL_SERVER_ERROR);
     }
 
+    await cacheService.invalidateChatLists(participants);
+
     return mapChatDto(populated, 0);
   },
 
@@ -55,6 +58,8 @@ export const groupsService = {
     if (!refreshed) {
       throw new AppError('Group not found after update', 404, ERROR_CODES.NOT_FOUND);
     }
+
+    await cacheService.invalidateChatLists(refreshed.participants.map((participant) => participant.toString()));
 
     return chatsService.attachUnreadCount(refreshed, userId);
   },
@@ -74,6 +79,8 @@ export const groupsService = {
     if (!refreshed) {
       throw new AppError('Group not found after update', 404, ERROR_CODES.NOT_FOUND);
     }
+
+    await cacheService.invalidateChatLists(refreshed.participants.map((participant) => participant.toString()));
 
     return chatsService.attachUnreadCount(refreshed, userId);
   },
@@ -95,6 +102,8 @@ export const groupsService = {
     if (!refreshed) {
       throw new AppError('Group not found after update', 404, ERROR_CODES.NOT_FOUND);
     }
+
+    await cacheService.invalidateChatLists(refreshed.participants.map((participant) => participant.toString()));
 
     return chatsService.attachUnreadCount(refreshed, userId);
   },

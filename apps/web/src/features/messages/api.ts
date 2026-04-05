@@ -1,4 +1,4 @@
-import type { AttachmentDto, MessageDto, PaginationMeta } from '@chat-app/shared';
+import type { AttachmentDto, MessageDto, MessageSearchResultDto, PaginationMeta } from '@chat-app/shared';
 
 import { api } from '@/lib/axios';
 
@@ -17,6 +17,14 @@ export const messagesApi = {
       data: response.data.data,
       meta: response.data.meta
     } satisfies MessageListResponse;
+  },
+
+  async search(chatId: string, query: string, limit = 12) {
+    const response = await api.get<{ data: MessageSearchResultDto[] }>(`/messages/${chatId}/search`, {
+      params: { query, limit }
+    });
+
+    return response.data.data;
   },
 
   async send(payload: {

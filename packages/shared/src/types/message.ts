@@ -35,6 +35,27 @@ export type MessageReaction = {
   userIds: string[];
 };
 
+export type MessageSearchResultDto = {
+  messageId: string;
+  chatId: string;
+  type: MessageType;
+  previewText: string;
+  matchSource: 'ciphertext' | 'attachment' | 'sender';
+  attachmentName?: string | null;
+  sender: Pick<UserSummary, 'id' | 'name' | 'username' | 'avatarUrl'>;
+  createdAt: string;
+};
+
+export type ChatNotificationDto = {
+  id: string;
+  chatId: string;
+  title: string;
+  body: string;
+  sender: Pick<UserSummary, 'id' | 'name' | 'username' | 'avatarUrl'>;
+  messageId: string;
+  createdAt: string;
+};
+
 export type MessageDto = {
   id: string;
   clientMessageId?: string | null;

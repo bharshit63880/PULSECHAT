@@ -9,12 +9,26 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          react: ['react', 'react-dom', 'react-router-dom'],
-          query: ['@tanstack/react-query', 'zustand'],
-          forms: ['react-hook-form', '@hookform/resolvers', 'zod'],
-          realtime: ['socket.io-client', 'axios', 'date-fns'],
-          ui: ['lucide-react', 'sonner', 'clsx', 'tailwind-merge']
+        manualChunks(id) {
+          if (!id.includes('node_modules')) {
+            return;
+          }
+
+          if (id.includes('react-hook-form') || id.includes('@hookform') || id.includes('\\zod\\')) {
+            return 'forms';
+          }
+
+          if (id.includes('socket.io-client') || id.includes('axios') || id.includes('date-fns')) {
+            return 'realtime';
+          }
+
+          if (id.includes('framer-motion')) {
+            return 'motion';
+          }
+
+          if (id.includes('lucide-react') || id.includes('sonner') || id.includes('clsx') || id.includes('tailwind-merge')) {
+            return 'ui';
+          }
         }
       }
     }

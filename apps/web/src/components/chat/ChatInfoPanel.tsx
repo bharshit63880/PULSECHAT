@@ -1,4 +1,4 @@
-import type { AuthUser, ChatDto, PublishedKeyBundleDto } from '@chat-app/shared';
+import type { AuthUser, ChatDto, MessageSearchResultDto, PublishedKeyBundleDto } from '@chat-app/shared';
 import type { ReactNode } from 'react';
 
 import { Check, ChevronDown, Copy, PencilLine, Search, ShieldCheck, TimerReset, UserPlus, UserRound, X } from 'lucide-react';
@@ -9,6 +9,8 @@ import { Avatar } from '@/components/common/Avatar';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { searchLocalMessages } from '@/features/messages/search';
+import { messagesApi } from '@/features/messages/api';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 
 const InfoRow = ({
   label,
@@ -23,14 +25,14 @@ const InfoRow = ({
   onCopy?: () => void;
   copied?: boolean;
 }) => (
-  <div className="space-y-1.5">
+  <div className="space-y-2">
     <div className="flex items-center justify-between gap-3">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">{label}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted/90">{label}</p>
       {onCopy ? (
         <button
           type="button"
           onClick={onCopy}
-          className="inline-flex items-center gap-1 rounded-full border border-line/80 px-2 py-1 text-[10px] font-semibold text-muted transition hover:border-accent/30 hover:text-accent"
+          className="inline-flex items-center gap-1 rounded-full border border-line/80 bg-white/70 px-2.5 py-1 text-[10px] font-semibold text-muted transition hover:border-accent/30 hover:bg-accent-soft hover:text-accent dark:bg-slate-950/70"
         >
           {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
           {copied ? 'Copied' : 'Copy'}
@@ -38,8 +40,8 @@ const InfoRow = ({
       ) : null}
     </div>
     <div
-      className={`rounded-2xl border border-line/80 bg-slate-50/80 px-3 py-2 text-sm text-slate-700 dark:bg-slate-900/70 dark:text-slate-100 ${
-        mono ? 'break-all font-mono text-[11px] leading-relaxed' : ''
+      className={`rounded-[22px] border border-line/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(248,250,252,0.84))] px-3.5 py-3 text-sm text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.84),rgba(15,23,42,0.62))] dark:text-slate-100 ${
+        mono ? 'break-all font-mono text-[11px] leading-6 tracking-[0.02em]' : 'leading-6'
       }`}
     >
       {value}
@@ -65,9 +67,11 @@ const SectionCard = ({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <section className="rounded-[28px] border border-line bg-white/80 p-6 shadow-[0_10px_40px_rgba(15,23,42,0.04)] transition-all duration-200 dark:bg-slate-950/50 dark:shadow-none">
+    <section className="glass-card rounded-[30px] p-5 transition-all duration-200 sm:p-6">
       <div className="flex items-start gap-3">
-        <div className="mt-0.5">{icon}</div>
+        <div className="mt-0.5 flex h-11 w-11 items-center justify-center rounded-2xl bg-accent-soft text-accent dark:text-emerald-200">
+          {icon}
+        </div>
         <div className="min-w-0 flex-1">
           <button
             type="button"
@@ -75,11 +79,11 @@ const SectionCard = ({
             className="flex w-full items-start justify-between gap-3 text-left"
           >
             <div>
-              <h3 className="font-semibold">{title}</h3>
-              <p className="text-xs text-muted">{subtitle}</p>
+              <h3 className="text-[15px] font-semibold text-ink">{title}</h3>
+              <p className="mt-1 text-xs leading-5 text-muted">{subtitle}</p>
             </div>
             <span
-              className={`mt-0.5 rounded-full border border-line p-1.5 text-muted transition-transform duration-200 ${
+              className={`mt-0.5 rounded-full border border-line bg-white/70 p-1.5 text-muted transition-transform duration-200 dark:bg-slate-950/70 ${
                 open ? 'rotate-180' : ''
               }`}
             >
@@ -93,7 +97,7 @@ const SectionCard = ({
           >
             <div className="overflow-hidden">
               {children}
-              {actions ? <div className="mt-4">{actions}</div> : null}
+              {actions ? <div className="mt-4 border-t border-line/70 pt-4">{actions}</div> : null}
             </div>
           </div>
         </div>
@@ -142,7 +146,7 @@ type ChatInfoPanelProps = {
 };
 
 const MemberBadge = ({ label }: { label: string }) => (
-  <span className="inline-flex items-center rounded-full border border-line/80 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted dark:bg-slate-900/70">
+  <span className="inline-flex items-center rounded-full border border-line/80 bg-white/75 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted shadow-sm dark:bg-slate-950/70">
     {label}
   </span>
 );
@@ -177,11 +181,13 @@ export const ChatInfoPanel = ({
   const groupMembers = chat.participants.filter((participant) => participant.id !== currentUser.id);
   const primaryDevice = peerBundle?.devices[0];
   const [search, setSearch] = useState('');
-  const [searchResults, setSearchResults] = useState<Array<{ messageId: string; text: string; createdAt: string }>>([]);
+  const [searchResults, setSearchResults] = useState<MessageSearchResultDto[]>([]);
+  const [isSearchingMessages, setIsSearchingMessages] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [isSafetySheetOpen, setIsSafetySheetOpen] = useState(false);
   const [isEditingGroupName, setIsEditingGroupName] = useState(false);
   const [groupNameDraft, setGroupNameDraft] = useState(chat.name ?? '');
+  const debouncedSearch = useDebouncedValue(search.trim(), 240);
   const canManageGroup = chat.isGroupChat && chat.admins.includes(currentUser.id);
   const availableUsers = directoryUsers.filter(
     (candidate) => candidate.id !== currentUser.id && !chat.participants.some((participant) => participant.id === candidate.id)
@@ -197,16 +203,59 @@ export const ChatInfoPanel = ({
   useEffect(() => {
     let cancelled = false;
 
-    void searchLocalMessages(currentUser.id, search).then((results) => {
-      if (!cancelled) {
-        setSearchResults(results.filter((item) => item.chatId === chat.id).slice(0, 6));
+    if (!debouncedSearch) {
+      setSearchResults([]);
+      setIsSearchingMessages(false);
+      return;
+    }
+
+    setIsSearchingMessages(true);
+
+    const load = async () => {
+      if (chat.isGroupChat) {
+        const results = await messagesApi.search(chat.id, debouncedSearch, 8);
+
+        if (!cancelled) {
+          setSearchResults(results);
+          setIsSearchingMessages(false);
+        }
+
+        return;
       }
-    });
+
+      const results = await searchLocalMessages(currentUser.id, debouncedSearch);
+
+      if (!cancelled) {
+        setSearchResults(
+          results
+            .filter((item) => item.chatId === chat.id)
+            .slice(0, 8)
+            .map((item) => ({
+              messageId: item.messageId,
+              chatId: item.chatId,
+              type: 'text',
+              previewText: item.text,
+              matchSource: 'ciphertext',
+              attachmentName: null,
+              sender: {
+                id: currentUser.id,
+                name: currentUser.name,
+                username: currentUser.username,
+                avatarUrl: currentUser.avatarUrl ?? null
+              },
+              createdAt: item.createdAt
+            }))
+        );
+        setIsSearchingMessages(false);
+      }
+    };
+
+    void load();
 
     return () => {
       cancelled = true;
     };
-  }, [chat.id, currentUser.id, search]);
+  }, [chat.id, chat.isGroupChat, currentUser, debouncedSearch]);
 
   const verificationLabel = useMemo(() => {
     if (!verification) {
@@ -256,20 +305,26 @@ export const ChatInfoPanel = ({
   return (
     <>
       <div className="fixed inset-0 z-30 bg-slate-950/30 backdrop-blur-sm xl:hidden" onClick={onClose} />
-      <aside className="fixed inset-y-0 right-0 z-40 flex w-full max-w-[360px] min-h-0 flex-col overflow-hidden border-l border-line bg-card shadow-[0_30px_120px_rgba(15,23,42,0.22)] transition-all duration-200 xl:relative xl:inset-auto xl:z-auto xl:w-[340px] xl:max-w-none xl:shadow-none">
-        <div className="flex items-center justify-between border-b border-line px-5 py-4">
+      <aside className="fixed inset-y-0 right-0 z-40 flex w-full max-w-[380px] min-h-0 flex-col overflow-hidden border-l border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))] shadow-[0_30px_120px_rgba(15,23,42,0.22)] backdrop-blur-2xl transition-all duration-200 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.94),rgba(2,6,23,0.94))] xl:relative xl:inset-auto xl:z-auto xl:w-[360px] xl:max-w-none xl:shadow-none">
+        <div className="border-b border-line/80 px-5 py-4">
+          <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold">Security and conversation</p>
-            <p className="text-xs text-muted">Safety number, timer, and local search</p>
+            <p className="text-sm font-semibold text-ink">Security and conversation</p>
+            <p className="mt-1 text-xs leading-5 text-muted">Safety number, timer, members, and local search</p>
           </div>
-          <button type="button" onClick={onClose} className="rounded-full border border-line p-2 text-muted">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full border border-line bg-white/70 p-2 text-muted transition hover:border-accent/25 hover:text-accent dark:bg-slate-950/70"
+          >
             <X className="h-4 w-4" />
           </button>
+          </div>
         </div>
 
-        <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain p-5">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5">
           {chat.isGroupChat ? (
-            <section className="rounded-[28px] border border-line bg-white/80 p-6 shadow-[0_10px_40px_rgba(15,23,42,0.04)] transition-all duration-200 dark:bg-slate-950/50 dark:shadow-none">
+            <section className="glass-card rounded-[30px] p-5 sm:p-6">
               <div className="flex flex-col items-center text-center">
                 <Avatar src={null} alt={chat.name ?? 'Group chat'} size="lg" />
                 {isEditingGroupName ? (
@@ -317,11 +372,11 @@ export const ChatInfoPanel = ({
                   Group messaging is available as a server-group MVP. Direct chats remain the end-to-end encrypted mode.
                 </p>
               </div>
-              <div className="mt-6 space-y-2.5">
+              <div className="mt-6 space-y-2.5 border-t border-line/70 pt-5">
                 {groupMembers.map((member) => (
                   <div
                     key={member.id}
-                    className="flex items-center gap-3 rounded-2xl border border-line bg-slate-50/70 px-3 py-3 dark:bg-slate-900/50"
+                    className="flex items-center gap-3 rounded-[22px] border border-line/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(248,250,252,0.72))] px-3 py-3 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.82),rgba(15,23,42,0.62))]"
                   >
                     <Avatar src={member.avatarUrl} alt={member.name} online={member.isOnline} />
                     <div className="min-w-0 flex-1">
@@ -347,7 +402,7 @@ export const ChatInfoPanel = ({
               </div>
             </section>
           ) : otherUser ? (
-            <section className="rounded-[28px] border border-line bg-white/80 p-6 shadow-[0_10px_40px_rgba(15,23,42,0.04)] transition-all duration-200 dark:bg-slate-950/50 dark:shadow-none">
+            <section className="glass-card rounded-[30px] p-5 sm:p-6">
               <div className="flex flex-col items-center text-center">
                 <Avatar src={otherUser.avatarUrl} alt={otherUser.name} online={otherUser.isOnline} size="lg" />
                 <h3 className="mt-4 text-[28px] font-semibold leading-none">{otherUser.name}</h3>
@@ -356,7 +411,7 @@ export const ChatInfoPanel = ({
                   <MemberBadge label="Direct chat" />
                   <MemberBadge label="E2EE" />
                 </div>
-                <p className="mt-4 max-w-[240px] text-sm leading-6 text-muted">
+                <p className="mt-4 max-w-[250px] text-sm leading-6 text-muted">
                   {otherUser.bio ?? 'No bio added yet.'}
                 </p>
               </div>
@@ -375,7 +430,7 @@ export const ChatInfoPanel = ({
                   availableUsers.slice(0, 8).map((candidate) => (
                     <div
                       key={candidate.id}
-                      className="flex items-center gap-3 rounded-2xl border border-line bg-slate-50/70 px-3 py-3 dark:bg-slate-900/50"
+                    className="flex items-center gap-3 rounded-[22px] border border-line/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(248,250,252,0.72))] px-3 py-3 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.82),rgba(15,23,42,0.62))]"
                     >
                       <Avatar src={candidate.avatarUrl} alt={candidate.name} online={candidate.isOnline} />
                       <div className="min-w-0 flex-1">
@@ -393,7 +448,7 @@ export const ChatInfoPanel = ({
                     </div>
                   ))
                 ) : (
-                  <div className="rounded-2xl border border-line/80 bg-slate-50/80 px-3 py-3 text-sm text-muted dark:bg-slate-900/70">
+                  <div className="rounded-[22px] border border-line/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.84),rgba(248,250,252,0.76))] px-3 py-3 text-sm text-muted dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.82),rgba(15,23,42,0.64))]">
                     No more users are available to add right now.
                   </div>
                 )}
@@ -408,10 +463,10 @@ export const ChatInfoPanel = ({
               subtitle="Server-group MVP"
             >
               <div className="space-y-3 text-sm leading-6 text-muted">
-                <div className="rounded-2xl border border-line/80 bg-slate-50/80 px-3 py-3 dark:bg-slate-900/70">
+                <div className="rounded-[22px] border border-line/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.84),rgba(248,250,252,0.76))] px-3 py-3 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.82),rgba(15,23,42,0.64))]">
                   Group chats currently send server-visible text metadata and content for collaboration MVP flows.
                 </div>
-                <div className="rounded-2xl border border-line/80 bg-slate-50/80 px-3 py-3 dark:bg-slate-900/70">
+                <div className="rounded-[22px] border border-line/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.84),rgba(248,250,252,0.76))] px-3 py-3 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.82),rgba(15,23,42,0.64))]">
                   Safety numbers and peer device verification apply to encrypted direct conversations only.
                 </div>
               </div>
@@ -473,7 +528,7 @@ export const ChatInfoPanel = ({
 
           <SectionCard
             icon={<TimerReset className="h-5 w-5 text-accent" />}
-            title="Disappearing timer"
+              title="Disappearing timer"
             subtitle="Server purges expired ciphertext automatically."
             defaultOpen={false}
           >
@@ -492,21 +547,42 @@ export const ChatInfoPanel = ({
 
           <SectionCard
             icon={<Search className="h-5 w-5 text-accent" />}
-            title="Local-only search"
-            subtitle="Search runs against decrypted content stored only in your browser."
+            title="Message search"
+            subtitle={
+              chat.isGroupChat
+                ? 'Server-assisted search for group text and attachment names.'
+                : 'Local decrypted search for direct E2EE messages.'
+            }
             defaultOpen={false}
           >
-            <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search decrypted messages" />
+            <Input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder={chat.isGroupChat ? 'Search group messages' : 'Search decrypted messages'}
+            />
             <div className="mt-3 space-y-2">
-              {searchResults.length > 0 ? (
+              {isSearchingMessages ? (
+                <p className="text-xs text-muted">Searching messages...</p>
+              ) : searchResults.length > 0 ? (
                 searchResults.map((item) => (
-                  <div key={item.messageId} className="rounded-2xl border border-line px-3 py-2 text-sm">
-                    <p className="line-clamp-2">{item.text}</p>
+                  <div key={item.messageId} className="rounded-[22px] border border-line/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.84),rgba(248,250,252,0.74))] px-3 py-3 text-sm shadow-sm dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.82),rgba(15,23,42,0.64))]">
+                    <p className="line-clamp-2">{item.previewText}</p>
+                    <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-muted">
+                      {item.matchSource}
+                    </p>
                     <p className="mt-1 text-[11px] text-muted">{new Date(item.createdAt).toLocaleString()}</p>
                   </div>
                 ))
               ) : (
-                <p className="text-xs text-muted">{search ? 'No local hits yet for this chat.' : 'Type to search your local decrypted cache.'}</p>
+                <p className="text-xs text-muted">
+                  {search
+                    ? chat.isGroupChat
+                      ? 'No matching group messages or attachments found.'
+                      : 'No local hits yet for this direct chat.'
+                    : chat.isGroupChat
+                      ? 'Type to search group messages and attachment names.'
+                      : 'Type to search your local decrypted cache.'}
+                </p>
               )}
             </div>
           </SectionCard>
@@ -514,7 +590,7 @@ export const ChatInfoPanel = ({
 
         {isSafetySheetOpen ? (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
-            <div className="w-full max-w-[300px] rounded-[28px] border border-line bg-white p-5 shadow-[0_20px_80px_rgba(15,23,42,0.22)] dark:bg-slate-950">
+            <div className="w-full max-w-[320px] rounded-[30px] border border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.94))] p-5 shadow-[0_20px_80px_rgba(15,23,42,0.22)] dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.96),rgba(2,6,23,0.94))]">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">Verify together</p>
@@ -526,7 +602,7 @@ export const ChatInfoPanel = ({
                 <button
                   type="button"
                   onClick={() => setIsSafetySheetOpen(false)}
-                  className="rounded-full border border-line p-2 text-muted"
+                  className="rounded-full border border-line bg-white/75 p-2 text-muted dark:bg-slate-950/75"
                 >
                   <X className="h-4 w-4" />
                 </button>

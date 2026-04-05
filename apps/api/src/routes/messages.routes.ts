@@ -12,6 +12,14 @@ export const messagesRouter = Router();
 messagesRouter.use(authMiddleware);
 messagesRouter.use(verifiedEmailMiddleware);
 messagesRouter.get(
+  '/:chatId/search',
+  validateMultiRequest({
+    params: messagesValidation.chatIdParam,
+    query: messagesValidation.searchQuery
+  }),
+  asyncHandler(messagesController.search)
+);
+messagesRouter.get(
   '/:chatId',
   validateMultiRequest({
     params: messagesValidation.chatIdParam,

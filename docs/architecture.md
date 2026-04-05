@@ -2,9 +2,9 @@
 
 ## High-Level Layout
 
-- `apps/web`: React client, browser crypto, local device state, decrypted search cache, outbox queue
+- `apps/web`: React client, browser crypto, notification center, infinite-scroll history state, local device state, decrypted search cache, outbox queue
 - `apps/mobile`: Expo / React Native client, secure session storage, mobile thread UI, mobile crypto adapter boundary
-- `apps/api`: Express API, Socket.io server, MongoDB models, device sessions, ciphertext persistence, cleanup jobs
+- `apps/api`: Express API, Socket.io server, MongoDB models, device sessions, ciphertext persistence, notifications fan-out, storage abstraction, cleanup jobs
 - `packages/shared`: socket names, DTOs, Zod schemas, response helpers
 
 ## Frontend Boundary
@@ -17,9 +17,12 @@ The web app owns:
 - encrypted attachment wrapping before upload
 - encrypted GIF and sticker media wrapping before upload
 - provider-backed GIF discovery in the browser before selected assets are re-encrypted for transport
-- decrypted message cache and local-only search
+- decrypted message cache and direct-chat local-only search
+- server-assisted group message search UX
 - safety-number verification UX
 - outbox queue and retry-safe message send
+- in-app notification center plus browser notification hooks
+- infinite-scroll pagination with optimistic reconciliation
 
 The web app must not:
 
@@ -54,6 +57,8 @@ The API owns:
 - ciphertext persistence
 - server-group text persistence for group chats
 - encrypted attachment metadata persistence
+- upload-provider abstraction for Cloudinary and S3-compatible buckets
+- realtime notification fan-out over socket user rooms
 - realtime presence and delivery orchestration
 - disappearing-message cleanup
 
@@ -88,8 +93,9 @@ It does not include:
 5. ciphertext, or server-group plaintext for the documented group MVP, is sent to the API
 6. API stores message content and metadata according to the chat mode
 7. Socket.io emits the new message to relevant participants
-8. direct-chat recipients decrypt locally after receipt or pagination load, while group recipients render the server-group text payload directly
-9. recipient marks seen and the API updates metadata only
+8. API emits chat notification payloads to recipient user rooms
+9. direct-chat recipients decrypt locally after receipt or pagination load, while group recipients render the server-group text payload directly
+10. recipient marks seen and the API updates metadata only
 
 The mobile client follows the same ciphertext contract, but uses secure device storage and a runtime-specific crypto adapter instead of browser storage APIs.
 
@@ -100,5 +106,6 @@ The mobile client follows the same ciphertext contract, but uses secure device s
 - encrypted payload is added to the persisted outbox
 - socket send waits for ack
 - on success, optimistic message is reconciled with the stored message
+- older history pages load on demand through infinite scroll
 - on timeout/failure, item stays in the outbox for retry
 - reconnect sync requests missed messages after the last known timestamp

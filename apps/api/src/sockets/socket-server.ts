@@ -7,6 +7,7 @@ import { corsOptions } from '../config/cors';
 import { chatsService } from '../modules/chats/chats.service';
 import { messagesService } from '../modules/messages/messages.service';
 import { presenceService } from '../modules/presence/presence.service';
+import { cacheService } from '../services/cache.service';
 import { logger } from '../services/logger.service';
 import { verifyAccessToken } from '../services/token.service';
 import { chatRoom, SOCKET_EVENTS, userRoom } from './socket.constants';
@@ -21,6 +22,12 @@ export const createSocketServer = (server: HttpServer) => {
   const io = new Server(server, {
     cors: corsOptions
   });
+  const socketAdapter = cacheService.createSocketAdapter();
+
+  if (socketAdapter) {
+    io.adapter(socketAdapter);
+    logger.info('Socket.io Redis adapter enabled');
+  }
 
   io.use((socket, next) => {
     try {

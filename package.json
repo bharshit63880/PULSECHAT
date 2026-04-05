@@ -11,7 +11,7 @@
     "dev:mobile": "npm run dev -w @chat-app/mobile",
     "build": "npm run build -w @chat-app/shared && npm run build -w @chat-app/api && npm run build -w @chat-app/web",
     "lint": "npm run lint -w @chat-app/shared && npm run lint -w @chat-app/api && npm run lint -w @chat-app/web",
-    "typecheck": "npm run typecheck -w @chat-app/shared && npm run typecheck -w @chat-app/api && npm run typecheck -w @chat-app/web",
+    "typecheck": "npm run build -w @chat-app/shared && npm run typecheck -w @chat-app/shared && npm run typecheck -w @chat-app/api && npm run typecheck -w @chat-app/web",
     "test": "npm run test -w @chat-app/api",
     "mobile:typecheck": "npm run typecheck -w @chat-app/mobile",
     "mobile:lint": "npm run lint -w @chat-app/mobile",

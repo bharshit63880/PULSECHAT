@@ -13,6 +13,14 @@ export const messagesController = {
     response.json(successResponse(result.messages, undefined, result.meta));
   },
 
+  async search(request: Request, response: Response) {
+    const { chatId } = request.params as { chatId: string };
+    const query = String(request.query.query ?? '');
+    const limit = Number(request.query.limit ?? 12);
+    const results = await messagesService.searchMessages(request.user!.id, chatId, query, limit);
+    response.json(successResponse(results));
+  },
+
   async send(request: Request, response: Response) {
     const message = await messagesService.sendMessage(request.user!.id, request.body, request.io);
     response.status(201).json(successResponse(message, 'Message sent successfully'));

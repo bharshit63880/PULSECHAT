@@ -20,11 +20,16 @@ type MessageBubbleProps = {
   status?: MessageStatus;
 };
 
-const QuickReaction = ({ emoji, onClick }: { emoji: string; onClick: () => void }) => (
+const QuickReaction = ({ emoji, own, onClick }: { emoji: string; own: boolean; onClick: () => void }) => (
   <button
     type="button"
     onClick={onClick}
-    className="rounded-full border border-white/15 px-2 py-1 text-xs transition hover:bg-white/10 dark:border-line"
+    className={cn(
+      'inline-flex h-8 min-w-8 items-center justify-center rounded-full border px-2 text-xs transition-all duration-200 hover:-translate-y-0.5',
+      own
+        ? 'border-white/15 bg-white/10 text-white/90 hover:bg-white/14'
+        : 'border-line/80 bg-white/72 text-ink hover:border-accent/30 hover:bg-white'
+    )}
   >
     {emoji}
   </button>
@@ -72,7 +77,7 @@ const AttachmentPreview = ({
     }
 
     void handleDecrypt();
-  }, [handleDecrypt, isDecrypting, isImageLike, peerPublicAgreementKey, previewUrl, attachment.encryption]);
+  }, [attachment.encryption, handleDecrypt, isDecrypting, isImageLike, peerPublicAgreementKey, previewUrl]);
 
   if (isImageLike && previewUrl) {
     const isSticker = attachment.fileName.endsWith('.svg');
@@ -83,20 +88,22 @@ const AttachmentPreview = ({
         alt={attachment.fileName}
         className={cn(
           'mb-2 object-cover',
-          isSticker ? 'h-44 w-44 bg-transparent object-contain drop-shadow-[0_14px_28px_rgba(15,23,42,0.18)]' : 'max-h-72 w-full rounded-2xl'
+          isSticker
+            ? 'h-44 w-44 object-contain drop-shadow-[0_18px_30px_rgba(15,23,42,0.14)]'
+            : 'max-h-80 w-full rounded-[24px]'
         )}
       />
     );
   }
 
   return (
-    <div className="mb-2 rounded-2xl border border-white/15 bg-white/10 p-3 text-sm dark:border-line dark:bg-slate-900">
+    <div className="mb-2 rounded-[24px] border border-white/15 bg-white/10 p-3 text-sm dark:border-line dark:bg-slate-900/55">
       <p className="truncate font-medium">{attachment.fileName}</p>
-      <div className="mt-2 flex items-center gap-2">
+      <div className="mt-3 flex items-center gap-2">
         <button
           type="button"
           onClick={() => void handleDecrypt()}
-          className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1 text-xs transition hover:bg-white/10 dark:border-line"
+          className="inline-flex min-h-9 items-center gap-2 rounded-full border border-white/15 px-3 py-1 text-xs transition hover:bg-white/10 dark:border-line"
           disabled={isDecrypting}
         >
           {isDecrypting ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
@@ -146,62 +153,83 @@ export const MessageBubble = ({
   })();
 
   return (
-    <div className={cn('flex', own ? 'justify-end' : 'justify-start')}>
-      <div
-        className={cn(
-          'max-w-[78%] rounded-[24px] px-4 py-3 shadow-sm',
-          isStickerMessage && 'bg-transparent px-0 py-0 shadow-none',
-          !isStickerMessage && own ? 'rounded-br-md bg-accent text-white' : '',
-          !isStickerMessage && !own ? 'rounded-bl-md bg-card' : ''
-        )}
-      >
-        {showSenderName ? <p className="mb-2 text-xs font-semibold text-emerald-300">{message.sender.name}</p> : null}
-        {message.replyTo ? (
-          <div className={cn('mb-2 rounded-2xl border px-3 py-2 text-xs', own ? 'border-white/15 bg-white/10' : 'border-line bg-slate-50 dark:bg-slate-900')}>
-            <p className="font-semibold">{message.replyTo.sender.name}</p>
-            <p className="truncate opacity-80">Replying to encrypted {message.replyTo.type}</p>
-          </div>
-        ) : null}
-
-        {message.attachment?.url ? <AttachmentPreview attachment={message.attachment} peerPublicAgreementKey={peerPublicAgreementKey} /> : null}
-
-        {shouldRenderPlaintext ? <p className="whitespace-pre-wrap text-sm leading-6">{plaintext}</p> : null}
-
-        {message.reactions.length > 0 ? (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {message.reactions.map((reaction) => (
-              <span key={reaction.emoji} className="rounded-full border border-white/15 px-2 py-1 text-xs dark:border-line">
-                {reaction.emoji} {reaction.userIds.length}
-              </span>
-            ))}
-          </div>
-        ) : null}
-
-        <div className={cn('mt-3 flex flex-wrap gap-2', isStickerMessage && 'mt-2')}>
-          {['👍', '❤️', '🔥'].map((emoji) => (
-            <QuickReaction key={emoji} emoji={emoji} onClick={() => onReact?.(message.id, emoji)} />
-          ))}
-        </div>
-
+    <div className={cn('flex px-1', own ? 'justify-end' : 'justify-start')}>
+      <div className={cn('max-w-[min(82%,38rem)]', own ? 'items-end' : 'items-start')}>
         <div
           className={cn(
-            'mt-2 flex items-center gap-1 text-[11px]',
-            own ? 'justify-end text-white/75' : 'justify-end text-muted',
-            isStickerMessage && (own ? 'pr-2 text-emerald-50/90' : 'pr-2 text-muted')
+            'relative rounded-[28px] px-4 py-3 shadow-[0_12px_30px_rgba(15,23,42,0.08)] transition-all duration-200',
+            isStickerMessage && 'bg-transparent px-0 py-0 shadow-none',
+            !isStickerMessage && own && 'rounded-br-md bg-[linear-gradient(180deg,rgba(20,184,126,0.94),rgba(16,185,129,0.88))] text-white',
+            !isStickerMessage && !own && 'rounded-bl-md border border-line/80 bg-white/85 text-ink dark:bg-slate-950/74'
           )}
         >
-          {message.expiresAt ? <Clock3 className="h-3.5 w-3.5" /> : null}
-          <span>{formatChatTimestamp(message.createdAt)}</span>
-          {own && status === 'sending' ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : null}
-          {own && status === 'sent' ? <CheckIcon className="h-3.5 w-3.5" /> : null}
-          {own && status === 'delivered' ? <CheckCheck className="h-3.5 w-3.5 text-white/80" /> : null}
-          {own && status === 'seen' ? <CheckCheck className="h-3.5 w-3.5 text-amber-200" /> : null}
-          {own && status === 'failed' ? (
-            <button type="button" onClick={() => message.clientMessageId && onRetry?.(message.clientMessageId)} className="inline-flex items-center gap-1 text-rose-200">
-              <RefreshCcw className="h-3.5 w-3.5" />
-              Retry
-            </button>
+          {showSenderName ? (
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-300">
+              {message.sender.name}
+            </p>
           ) : null}
+          {message.replyTo ? (
+            <div
+              className={cn(
+                'mb-3 rounded-[22px] border px-3 py-2.5 text-xs',
+                own ? 'border-white/15 bg-white/10' : 'border-line/80 bg-card-muted/80 dark:bg-slate-900/75'
+              )}
+            >
+              <p className="font-semibold">{message.replyTo.sender.name}</p>
+              <p className="truncate opacity-80">Replying to encrypted {message.replyTo.type}</p>
+            </div>
+          ) : null}
+
+          {message.attachment?.url ? <AttachmentPreview attachment={message.attachment} peerPublicAgreementKey={peerPublicAgreementKey} /> : null}
+
+          {shouldRenderPlaintext ? <p className="whitespace-pre-wrap text-sm leading-6">{plaintext}</p> : null}
+
+          {message.reactions.length > 0 ? (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {message.reactions.map((reaction) => (
+                <span
+                  key={reaction.emoji}
+                  className={cn(
+                    'inline-flex items-center rounded-full border px-2.5 py-1 text-xs',
+                    own ? 'border-white/15 bg-white/10 text-white/90' : 'border-line/80 bg-card-muted/80 text-ink'
+                  )}
+                >
+                  {reaction.emoji} {reaction.userIds.length}
+                </span>
+              ))}
+            </div>
+          ) : null}
+
+          <div className={cn('mt-3 flex flex-wrap gap-2', isStickerMessage && 'mt-2 px-2')}>
+            {['👍', '❤️', '🔥'].map((emoji) => (
+              <QuickReaction key={emoji} emoji={emoji} own={own} onClick={() => onReact?.(message.id, emoji)} />
+            ))}
+          </div>
+
+          <div
+            className={cn(
+              'mt-3 flex items-center gap-1.5 text-[11px] font-medium',
+              own ? 'justify-end text-white/78' : 'justify-end text-muted',
+              isStickerMessage && (own ? 'pr-2 text-emerald-50/90' : 'pr-2 text-muted')
+            )}
+          >
+            {message.expiresAt ? <Clock3 className="h-3.5 w-3.5" /> : null}
+            <span>{formatChatTimestamp(message.createdAt)}</span>
+            {own && status === 'sending' ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : null}
+            {own && status === 'sent' ? <CheckIcon className="h-3.5 w-3.5" /> : null}
+            {own && status === 'delivered' ? <CheckCheck className="h-3.5 w-3.5 text-white/80" /> : null}
+            {own && status === 'seen' ? <CheckCheck className="h-3.5 w-3.5 text-warm" /> : null}
+            {own && status === 'failed' ? (
+              <button
+                type="button"
+                onClick={() => message.clientMessageId && onRetry?.(message.clientMessageId)}
+                className="inline-flex items-center gap-1 text-rose-200"
+              >
+                <RefreshCcw className="h-3.5 w-3.5" />
+                Retry
+              </button>
+            ) : null}
+          </div>
         </div>
       </div>
     </div>

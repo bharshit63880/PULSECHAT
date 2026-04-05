@@ -63,6 +63,10 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(5000),
   CLIENT_URL: z.string().url().default('http://localhost:5173'),
   MONGODB_URI: requiredTrimmedStringFromEnv(),
+  REDIS_URL: optionalTrimmedStringFromEnv(),
+  REDIS_KEY_PREFIX: requiredTrimmedStringFromEnv().default('pulse'),
+  CHAT_LIST_CACHE_TTL_SEC: z.coerce.number().int().positive().default(45),
+  PRESENCE_CACHE_TTL_SEC: z.coerce.number().int().positive().default(120),
   JWT_SECRET: requiredTrimmedStringFromEnv(32, 'JWT_SECRET should be at least 32 characters long'),
   JWT_EXPIRES_IN: requiredTrimmedStringFromEnv().default('7d'),
   REFRESH_TOKEN_SECRET: requiredTrimmedStringFromEnv(
@@ -76,6 +80,7 @@ const envSchema = z.object({
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900000),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(300),
   AUTH_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
+  UPLOAD_PROVIDER: z.enum(['disabled', 'cloudinary', 's3']).default('disabled'),
   SMTP_HOST: optionalTrimmedStringFromEnv(),
   SMTP_SERVICE: optionalTrimmedStringFromEnv(),
   SMTP_PORT: z.coerce.number().int().positive().optional(),
@@ -86,6 +91,12 @@ const envSchema = z.object({
   CLOUDINARY_CLOUD_NAME: optionalTrimmedStringFromEnv(),
   CLOUDINARY_API_KEY: optionalTrimmedStringFromEnv(),
   CLOUDINARY_API_SECRET: optionalTrimmedStringFromEnv(),
+  S3_BUCKET: optionalTrimmedStringFromEnv(),
+  S3_REGION: optionalTrimmedStringFromEnv(),
+  S3_ENDPOINT: optionalTrimmedStringFromEnv(),
+  S3_ACCESS_KEY_ID: optionalTrimmedStringFromEnv(),
+  S3_SECRET_ACCESS_KEY: optionalTrimmedStringFromEnv(),
+  S3_FORCE_PATH_STYLE: booleanFromEnv.default(false),
   MAX_FILE_SIZE_MB: z.coerce.number().positive().default(10)
 }).superRefine((data, context) => {
   const hasMailEndpoint = Boolean(data.SMTP_SERVICE || data.SMTP_HOST);
@@ -106,6 +117,38 @@ const envSchema = z.object({
       path: ['SMTP_PORT'],
       message: 'SMTP_PORT is required when SMTP_HOST is configured without SMTP_SERVICE'
     });
+  }
+
+  if (data.UPLOAD_PROVIDER === 'cloudinary') {
+    const hasCloudinaryTuple =
+      Boolean(data.CLOUDINARY_CLOUD_NAME) &&
+      Boolean(data.CLOUDINARY_API_KEY) &&
+      Boolean(data.CLOUDINARY_API_SECRET);
+
+    if (!hasCloudinaryTuple) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['CLOUDINARY_CLOUD_NAME'],
+        message: 'Cloudinary uploads require CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET'
+      });
+    }
+  }
+
+  if (data.UPLOAD_PROVIDER === 's3') {
+    const hasS3Tuple =
+      Boolean(data.S3_BUCKET) &&
+      Boolean(data.S3_REGION) &&
+      Boolean(data.S3_ACCESS_KEY_ID) &&
+      Boolean(data.S3_SECRET_ACCESS_KEY);
+
+    if (!hasS3Tuple) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['S3_BUCKET'],
+        message:
+          'S3 uploads require S3_BUCKET, S3_REGION, S3_ACCESS_KEY_ID, and S3_SECRET_ACCESS_KEY'
+      });
+    }
   }
 });
 
@@ -130,4 +173,11 @@ export const hasCloudinaryConfig =
   Boolean(env.CLOUDINARY_API_KEY) &&
   Boolean(env.CLOUDINARY_API_SECRET);
 
+export const hasS3Config =
+  Boolean(env.S3_BUCKET) &&
+  Boolean(env.S3_REGION) &&
+  Boolean(env.S3_ACCESS_KEY_ID) &&
+  Boolean(env.S3_SECRET_ACCESS_KEY);
+
 export const hasSmtpConfig = Boolean(smtpConfig?.from && smtpConfig.user && smtpConfig.pass);
+export const hasRedisConfig = Boolean(env.REDIS_URL);

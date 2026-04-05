@@ -1,7 +1,8 @@
 import type { AuthUser, ChatDto, MessageDto, PaginationMeta } from '@chat-app/shared';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
+import type { InfiniteData } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useDeferredValue, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -27,6 +28,7 @@ import { useSecureMessages } from '@/features/messages/use-secure-messages';
 import { groupsApi } from '@/features/groups/api';
 import { usersApi } from '@/features/users/api';
 import { useAuthBootstrap } from '@/hooks/use-auth-bootstrap';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useDeviceBootstrap } from '@/hooks/use-device-bootstrap';
 import { useSocketBridge } from '@/hooks/use-socket-bridge';
 import { disconnectSocket, getSocket } from '@/lib/socket';
@@ -35,6 +37,7 @@ import { uploadService } from '@/services/upload.service';
 import { useAuthStore } from '@/store/auth-store';
 import { useCryptoStore } from '@/store/crypto-store';
 import { useOutboxStore } from '@/store/outbox-store';
+import { useNotificationsStore } from '@/store/notifications-store';
 import { useUiStore } from '@/store/ui-store';
 
 type MessagesQueryData = {
@@ -84,7 +87,21 @@ const updateMessageCache = (
   chatId: string,
   updater: (current: MessagesQueryData | undefined) => MessagesQueryData
 ) => {
-  queryClient.setQueryData<MessagesQueryData>(['messages', chatId], (current) => updater(current));
+  queryClient.setQueryData<InfiniteData<MessagesQueryData>>(['messages', chatId], (current) => {
+    if (!current) {
+      return {
+        pages: [updater(undefined)],
+        pageParams: [1]
+      };
+    }
+
+    const [firstPage, ...remainingPages] = current.pages;
+
+    return {
+      ...current,
+      pages: [updater(firstPage), ...remainingPages]
+    };
+  });
 };
 
 export const ChatWorkspace = () => {
@@ -109,6 +126,12 @@ export const ChatWorkspace = () => {
   const [showMobileChat, setShowMobileChat] = useState(false);
   const [isGroupDialogOpen, setIsGroupDialogOpen] = useState(false);
   const sendingRef = useRef<Set<string>>(new Set());
+  const notifications = useNotificationsStore((state) => state.items);
+  const unreadNotificationCount = useNotificationsStore((state) => state.unreadCount);
+  const markNotificationsRead = useNotificationsStore((state) => state.markAllRead);
+  const dismissNotification = useNotificationsStore((state) => state.dismiss);
+  const deferredSearch = useDeferredValue(search);
+  const debouncedSearch = useDebouncedValue(deferredSearch.trim());
 
   const chatsQuery = useQuery({
     queryKey: ['chats'],
@@ -117,9 +140,9 @@ export const ChatWorkspace = () => {
   });
 
   const usersQuery = useQuery({
-    queryKey: ['users', search],
-    queryFn: () => usersApi.list(search),
-    enabled: Boolean(user) && search.trim().length > 0
+    queryKey: ['users', debouncedSearch],
+    queryFn: () => usersApi.list(debouncedSearch),
+    enabled: Boolean(user) && debouncedSearch.length > 0
   });
 
   const directoryUsersQuery = useQuery({
@@ -133,16 +156,23 @@ export const ChatWorkspace = () => {
     [activeChatId, chatsQuery.data]
   );
 
-  const messagesQuery = useQuery({
+  const messagesQuery = useInfiniteQuery({
     queryKey: ['messages', activeChatId],
-    queryFn: () => messagesApi.list(activeChatId!, 1, 40),
-    enabled: Boolean(activeChatId)
+    queryFn: ({ pageParam = 1 }) => messagesApi.list(activeChatId!, pageParam, 40),
+    enabled: Boolean(activeChatId),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.meta.page < lastPage.meta.totalPages ? lastPage.meta.page + 1 : undefined
   });
 
   const { typingUserIds } = useSocketBridge(activeChat);
+  const pagedMessages = useMemo(
+    () => [...(messagesQuery.data?.pages ?? [])].reverse().flatMap((page) => page.data),
+    [messagesQuery.data?.pages]
+  );
   const { secureMessages, peerBundle, primaryPeerDevice } = useSecureMessages(
     activeChat,
-    messagesQuery.data?.data ?? [],
+    pagedMessages,
     user?.id
   );
 
@@ -153,7 +183,7 @@ export const ChatWorkspace = () => {
   }, [activeChatId, chatsQuery.data, setActiveChatId]);
 
   useEffect(() => {
-    if (!activeChat || !messagesQuery.data || activeChat.unreadCount === 0) {
+    if (!activeChat || pagedMessages.length === 0 || activeChat.unreadCount === 0) {
       return;
     }
 
@@ -161,7 +191,7 @@ export const ChatWorkspace = () => {
     queryClient.setQueryData<ChatDto[]>(['chats'], (current) =>
       (current ?? []).map((chat) => (chat.id === activeChat.id ? { ...chat, unreadCount: 0 } : chat))
     );
-  }, [activeChat, messagesQuery.data, queryClient]);
+  }, [activeChat, pagedMessages.length, queryClient]);
 
   const directChatMutation = useMutation({
     mutationFn: chatsApi.createDirect,
@@ -354,15 +384,29 @@ export const ChatWorkspace = () => {
     });
   }, [outbox, sendQueuedMessage, token, user]);
 
+  const typingNames = (activeChat?.participants ?? [])
+    .filter((participant) => typingUserIds.includes(participant.id))
+    .map((participant) => participant.name);
+
+  const localStatusMap = useMemo(
+    () =>
+      Object.fromEntries(
+        outbox
+          .filter((item) => item.chatId === activeChat?.id)
+          .map((item) => [item.clientMessageId, item.status === 'pending' ? 'sending' : 'failed'])
+      ) as Record<string, 'sending' | 'failed'>,
+    [activeChat?.id, outbox]
+  );
+
   if (!token) {
     return <Navigate to="/login" replace />;
   }
 
   if (bootstrapQuery.isLoading || chatsQuery.isLoading || !isDeviceReady) {
     return (
-      <div className="grid min-h-screen grid-cols-[320px_1fr] gap-4 p-4">
-        <Skeleton className="h-[calc(100vh-2rem)] rounded-[32px]" />
-        <Skeleton className="h-[calc(100vh-2rem)] rounded-[32px]" />
+      <div className="safe-px safe-pt safe-pb grid min-h-screen gap-4 lg:grid-cols-[360px_1fr]">
+        <Skeleton className="h-[calc(100vh-2rem)] rounded-[36px]" />
+        <Skeleton className="h-[calc(100vh-2rem)] rounded-[36px]" />
       </div>
     );
   }
@@ -373,7 +417,7 @@ export const ChatWorkspace = () => {
 
   if (chatsQuery.isError) {
     return (
-      <div className="min-h-screen p-6">
+      <div className="safe-px safe-pt safe-pb min-h-screen">
         <ErrorState
           title="Unable to load chats"
           description="The secure workspace could not load your conversations right now."
@@ -382,16 +426,6 @@ export const ChatWorkspace = () => {
       </div>
     );
   }
-
-  const typingNames = (activeChat?.participants ?? [])
-    .filter((participant) => typingUserIds.includes(participant.id))
-    .map((participant) => participant.name);
-
-  const localStatusMap = Object.fromEntries(
-    outbox
-      .filter((item) => item.chatId === activeChat?.id)
-      .map((item) => [item.clientMessageId, item.status === 'pending' ? 'sending' : 'failed'])
-  ) as Record<string, 'sending' | 'failed'>;
 
   const handleTypingStart = () => {
     if (activeChat && token) {
@@ -544,8 +578,8 @@ export const ChatWorkspace = () => {
   };
 
   return (
-    <div className="h-screen p-3 sm:p-4">
-      <div className="grid h-full overflow-hidden rounded-[36px] border border-white/50 bg-white/70 shadow-soft backdrop-blur dark:border-white/5 dark:bg-slate-950/70 lg:grid-cols-[360px_minmax(0,1fr)_340px]">
+    <div className="safe-px safe-pt safe-pb h-screen">
+      <div className="glass-panel grid h-full overflow-hidden rounded-[36px] lg:grid-cols-[360px_minmax(0,1fr)_340px]">
         <div className={`${showMobileChat ? 'hidden lg:block' : 'block'} min-h-0`}>
           <ChatSidebar
             currentUser={user}
@@ -555,6 +589,8 @@ export const ChatWorkspace = () => {
             searchResults={usersQuery.data ?? []}
             isSearching={usersQuery.isFetching}
             directoryUsers={directoryUsersQuery.data ?? []}
+            notifications={notifications}
+            unreadNotificationCount={unreadNotificationCount}
             isCreatingGroup={createGroupMutation.isPending}
             isGroupDialogOpen={isGroupDialogOpen}
             onSearchChange={setSearch}
@@ -563,6 +599,12 @@ export const ChatWorkspace = () => {
               setShowMobileChat(true);
             }}
             onOpenDirect={(userId) => directChatMutation.mutate(userId)}
+            onOpenNotificationChat={(chatId) => {
+              setActiveChatId(chatId);
+              setShowMobileChat(true);
+            }}
+            onMarkNotificationsRead={markNotificationsRead}
+            onDismissNotification={dismissNotification}
             onOpenGroupDialog={() => setIsGroupDialogOpen(true)}
             onCloseGroupDialog={() => setIsGroupDialogOpen(false)}
             onCreateGroup={(payload) => createGroupMutation.mutate(payload)}
@@ -570,7 +612,7 @@ export const ChatWorkspace = () => {
           />
         </div>
 
-        <div className={`${showMobileChat ? 'flex' : 'hidden lg:flex'} min-h-0 flex-col overflow-hidden`}>
+        <div className={`${showMobileChat ? 'flex' : 'hidden lg:flex'} min-h-0 flex-col overflow-hidden bg-[linear-gradient(180deg,rgba(255,255,255,0.12),rgba(255,255,255,0.02))] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))]`}>
           {activeChat ? (
             <>
               <ChatHeader
@@ -579,7 +621,7 @@ export const ChatWorkspace = () => {
                 onBack={() => setShowMobileChat(false)}
                 onToggleInfo={() => setInfoPanelOpen(!isInfoPanelOpen)}
               />
-              <div className="min-h-0 flex-1 overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(34,197,94,0.08),_transparent_36%),linear-gradient(180deg,_rgba(255,255,255,0.28),_rgba(255,255,255,0))] dark:bg-[radial-gradient(circle_at_top_left,_rgba(34,197,94,0.12),_transparent_36%),linear-gradient(180deg,_rgba(2,6,23,0.24),_rgba(2,6,23,0))]">
+              <div className="min-h-0 flex-1 overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(34,197,94,0.08),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(56,189,248,0.08),_transparent_26%),linear-gradient(180deg,_rgba(255,255,255,0.22),_rgba(255,255,255,0.04))] dark:bg-[radial-gradient(circle_at_top_left,_rgba(34,197,94,0.12),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(56,189,248,0.08),_transparent_26%),linear-gradient(180deg,_rgba(2,6,23,0.3),_rgba(2,6,23,0.12))]">
                 {messagesQuery.isError ? (
                   <div className="h-full p-4">
                     <ErrorState
@@ -594,6 +636,13 @@ export const ChatWorkspace = () => {
                     messages={secureMessages}
                     currentUserId={user.id}
                     typingNames={typingNames}
+                    hasMore={Boolean(messagesQuery.hasNextPage)}
+                    isLoadingMore={messagesQuery.isFetchingNextPage}
+                    onLoadMore={() => {
+                      if (messagesQuery.hasNextPage && !messagesQuery.isFetchingNextPage) {
+                        void messagesQuery.fetchNextPage();
+                      }
+                    }}
                     localStatuses={localStatusMap}
                     peerPublicAgreementKey={primaryPeerDevice?.publicAgreementKey}
                     onReact={(messageId, emoji) => reactMutation.mutate({ messageId, emoji })}
@@ -609,7 +658,7 @@ export const ChatWorkspace = () => {
               />
             </>
           ) : (
-            <div className="p-4">
+            <div className="flex h-full items-center justify-center p-4 sm:p-6">
               <EmptyState
                 title="Choose a secure conversation"
                 description="Pick a chat from the sidebar or search for someone to begin encrypted messaging."
@@ -656,7 +705,7 @@ export const ChatWorkspace = () => {
             onClose={() => setInfoPanelOpen(false)}
           />
         ) : (
-          <div className="hidden border-l border-line xl:block" />
+          <div className="hidden border-l border-line/70 bg-white/12 xl:block dark:bg-white/[0.02]" />
         )}
       </div>
     </div>

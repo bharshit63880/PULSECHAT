@@ -1,4 +1,4 @@
-import type { MessageDto } from '@chat-app/shared';
+import type { MessageDto, MessageSearchResultDto } from '@chat-app/shared';
 import type { Server } from 'socket.io';
 
 import { Types } from 'mongoose';
@@ -7,10 +7,14 @@ import { ERROR_CODES } from '../../constants/http';
 import { AppError } from '../../errors/AppError';
 import { ChatModel } from '../../models/Chat';
 import { MessageModel } from '../../models/Message';
-import { mapMessageDto } from '../../services/mapper.service';
+import { cacheService } from '../../services/cache.service';
+import { mapMessageDto, mapMessageSearchResultDto } from '../../services/mapper.service';
 import { SOCKET_EVENTS, userRoom } from '../../sockets/socket.constants';
 import { chatsService } from '../chats/chats.service';
+import { notificationsService } from '../notifications/notifications.service';
 import { presenceService } from '../presence/presence.service';
+
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 type SendMessageInput = {
   chatId: string;
@@ -79,9 +83,10 @@ export const messagesService = {
 
     const participantIds = chat.participants.map((participant) => participant.toString());
     const recipientId = participantIds.find((participantId) => participantId !== senderId);
+    const recipientOnline = recipientId ? await presenceService.isUserOnline(recipientId) : false;
     const deliveryStatus = chat.isGroupChat
       ? 'sent'
-      : recipientId && presenceService.isUserOnline(recipientId)
+      : recipientOnline
         ? 'delivered'
         : 'sent';
     const now = new Date();
@@ -115,6 +120,7 @@ export const messagesService = {
       updatedAt: now,
       lastActivityAt: now
     });
+    await cacheService.invalidateChatLists(participantIds);
 
     const populatedMessage = await MessageModel.findById(message.id)
       .populate('sender')
@@ -150,6 +156,13 @@ export const messagesService = {
         clientMessageId: input.clientMessageId ?? null,
         message: dto
       });
+
+      notificationsService.emitMessageNotification(io, {
+        chat,
+        message: populatedMessage,
+        sender: populatedMessage.sender,
+        recipientIds: participantIds.filter((participantId) => participantId !== senderId)
+      });
     }
 
     return dto;
@@ -162,6 +175,42 @@ export const messagesService = {
       messages: result.messages.map(mapMessageDto),
       meta: result.meta
     };
+  },
+
+  async searchMessages(userId: string, chatId: string, query: string, limit: number): Promise<MessageSearchResultDto[]> {
+    const chat = await chatsService.assertMember(chatId, userId);
+    const regex = new RegExp(escapeRegex(query.trim()), 'i');
+    const orFilters: Array<Record<string, RegExp>> = [{ 'attachment.fileName': regex }];
+
+    if (chat.isGroupChat) {
+      orFilters.unshift({ ciphertext: regex });
+    }
+
+    const messages = await MessageModel.find({
+      chat: chatId,
+      $or: orFilters
+    })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .populate('sender');
+
+    return messages.map((message) => {
+      const sender = message.sender as { name?: string } | null;
+      const senderName = sender?.name ?? 'Unknown sender';
+      const attachmentName = message.attachment?.fileName ?? null;
+      const previewText =
+        chat.isGroupChat && regex.test(message.ciphertext)
+          ? message.ciphertext.slice(0, 180)
+          : attachmentName && regex.test(attachmentName)
+            ? `Attachment: ${attachmentName}`
+            : `Message from ${senderName}`;
+      const matchSource: MessageSearchResultDto['matchSource'] =
+        chat.isGroupChat && regex.test(message.ciphertext)
+          ? 'ciphertext'
+          : 'attachment';
+
+      return mapMessageSearchResultDto(message, previewText, matchSource);
+    });
   },
 
   async markMessagesSeen(userId: string, chatId: string, io?: Server) {
@@ -197,9 +246,10 @@ export const messagesService = {
     );
 
     const messageIds = unseenMessages.map((message) => message.id);
+    const participantIds = await chatsService.getChatParticipants(chatId);
+    await cacheService.invalidateChatLists(participantIds);
 
     if (io) {
-      const participantIds = await chatsService.getChatParticipants(chatId);
       participantIds.forEach((participantId) => {
         io.to(userRoom(participantId)).emit(SOCKET_EVENTS.MESSAGES_SEEN, {
           chatId,

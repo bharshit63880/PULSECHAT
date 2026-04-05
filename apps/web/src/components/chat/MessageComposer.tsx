@@ -123,7 +123,7 @@ export const MessageComposer = ({
           : 'Write a secure message';
 
   return (
-    <div className="border-t border-line p-4">
+    <div className="border-t border-line/75 px-3 pb-[calc(0.9rem+var(--safe-bottom))] pt-3 sm:px-4 lg:px-5">
       {isMediaPickerOpen ? (
         <MediaPicker
           activeTab={mediaTab}
@@ -144,17 +144,18 @@ export const MessageComposer = ({
           }}
         />
       ) : null}
+
       {attachment ? (
-        <div className="mb-3 flex items-center justify-between rounded-2xl border border-line bg-card px-3 py-2 text-sm">
+        <div className="mb-3 flex items-center justify-between gap-3 rounded-[24px] border border-line/80 bg-white/72 px-3 py-2.5 dark:bg-slate-950/62">
           <div className="flex min-w-0 items-center gap-3">
             {attachmentPreviewUrl ? (
               <img
                 src={attachmentPreviewUrl}
                 alt={attachment.name}
-                className="h-11 w-11 rounded-2xl object-contain bg-slate-100 p-1 dark:bg-slate-900"
+                className="h-12 w-12 rounded-2xl bg-card-muted p-1 object-contain"
               />
             ) : null}
-            <span className="truncate">{attachmentLabel}</span>
+            <span className="truncate text-sm text-ink">{attachmentLabel}</span>
           </div>
           <button
             type="button"
@@ -162,68 +163,76 @@ export const MessageComposer = ({
               setAttachment(null);
               setAttachmentType(null);
             }}
-            className="text-muted"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-2xl border border-line/80 text-muted transition hover:text-ink"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
       ) : null}
-      <div className="flex items-end gap-3">
-        <input
-          ref={fileInputRef}
-          type="file"
-          className="hidden"
-          accept="image/*,application/pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.txt,.csv"
-          onChange={(event) => handleStandardAttachmentChange(event.target.files?.[0] ?? null)}
-        />
-        <Button
-          variant="secondary"
-          type="button"
-          className="h-12 w-12 rounded-full p-0"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={disabled || isSubmitting}
-        >
-          <Paperclip className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="secondary"
-          type="button"
-          className="h-12 rounded-full px-4"
-          onClick={() => {
-            setMediaTab('emoji');
-            setIsMediaPickerOpen((current) => !current);
-          }}
-          disabled={disabled || isSubmitting}
-        >
-          <Sparkles className="mr-2 h-4 w-4" />
-          Media
-        </Button>
-        <textarea
-          value={text}
-          onChange={(event) => {
-            setText(event.target.value);
-            onTypingStart();
-            scheduleTypingStop();
-          }}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' && !event.shiftKey) {
-              event.preventDefault();
-              void handleSubmit();
-            }
-          }}
-          rows={1}
-          placeholder={placeholder}
-          className="max-h-40 min-h-12 flex-1 resize-none rounded-[24px] border border-line bg-card px-4 py-3 text-sm outline-none placeholder:text-muted focus:border-accent"
-          disabled={disabled || isSubmitting}
-        />
-        <Button
-          type="button"
-          className="h-12 w-12 rounded-full p-0"
-          onClick={() => void handleSubmit()}
-          disabled={disabled || isSubmitting}
-        >
-          <SendHorizonal className="h-4 w-4" />
-        </Button>
+
+      <div className="glass-card rounded-[30px] px-3 py-3">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            accept="image/*,application/pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.txt,.csv"
+            onChange={(event) => handleStandardAttachmentChange(event.target.files?.[0] ?? null)}
+          />
+
+          <Button
+            variant="secondary"
+            type="button"
+            className="min-h-10 rounded-full px-3 py-2"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={disabled || isSubmitting}
+          >
+            <Paperclip className="h-4 w-4" />
+            Attach
+          </Button>
+          <Button
+            variant="secondary"
+            type="button"
+            className="min-h-10 rounded-full px-3 py-2"
+            onClick={() => {
+              setMediaTab('emoji');
+              setIsMediaPickerOpen((current) => !current);
+            }}
+            disabled={disabled || isSubmitting}
+          >
+            <Sparkles className="h-4 w-4" />
+            Media
+          </Button>
+        </div>
+
+        <div className="flex items-end gap-3">
+          <textarea
+            value={text}
+            onChange={(event) => {
+              setText(event.target.value);
+              onTypingStart();
+              scheduleTypingStop();
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                void handleSubmit();
+              }
+            }}
+            rows={1}
+            placeholder={placeholder}
+            className="min-h-[52px] max-h-40 flex-1 resize-none rounded-[24px] border border-line/80 bg-white/74 px-4 py-3 text-sm text-ink outline-none transition placeholder:text-muted hover:border-accent/25 focus:border-accent/50 dark:bg-slate-950/62"
+            disabled={disabled || isSubmitting}
+          />
+          <Button
+            type="button"
+            className="h-12 w-12 rounded-full p-0"
+            onClick={() => void handleSubmit()}
+            disabled={disabled || isSubmitting}
+          >
+            <SendHorizonal className="h-4.5 w-4.5" />
+          </Button>
+        </div>
       </div>
     </div>
   );

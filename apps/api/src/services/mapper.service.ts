@@ -1,4 +1,12 @@
-import type { ChatDto, DeviceSessionDto, MessageDto, ReplyPreview, UserSummary } from '@chat-app/shared';
+import type {
+  ChatDto,
+  ChatNotificationDto,
+  DeviceSessionDto,
+  MessageDto,
+  MessageSearchResultDto,
+  ReplyPreview,
+  UserSummary
+} from '@chat-app/shared';
 
 const toIso = (value: Date | string | null | undefined) => (value ? new Date(value).toISOString() : null);
 
@@ -94,6 +102,41 @@ export const mapMessageDto = (message: any): MessageDto => ({
   edited: Boolean(message.edited),
   createdAt: new Date(message.createdAt).toISOString(),
   updatedAt: new Date(message.updatedAt).toISOString()
+});
+
+export const mapMessageSearchResultDto = (message: any, previewText: string, matchSource: MessageSearchResultDto['matchSource']): MessageSearchResultDto => ({
+  messageId: toId(message),
+  chatId: toId(message.chat),
+  type: message.type,
+  previewText,
+  matchSource,
+  attachmentName: message.attachment?.fileName ?? null,
+  sender: {
+    id: toId(message.sender),
+    name: message.sender.name,
+    username: message.sender.username,
+    avatarUrl: message.sender.avatarUrl ?? null
+  },
+  createdAt: new Date(message.createdAt).toISOString()
+});
+
+export const mapNotificationDto = (message: any, chat: any, actor: any): ChatNotificationDto => ({
+  id: `${toId(chat)}:${toId(message)}`,
+  chatId: toId(chat),
+  title: chat.isGroupChat ? chat.name ?? actor.name : actor.name,
+  body: message.attachment?.fileName
+    ? `Shared ${message.attachment.fileName}`
+    : message.type === 'text'
+      ? 'Sent a new secure message'
+      : `Sent a ${message.type}`,
+  sender: {
+    id: toId(actor),
+    name: actor.name,
+    username: actor.username,
+    avatarUrl: actor.avatarUrl ?? null
+  },
+  messageId: toId(message),
+  createdAt: new Date(message.createdAt).toISOString()
 });
 
 export const mapChatDto = (chat: any, unreadCount: number): ChatDto => ({
