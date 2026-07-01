@@ -5,7 +5,12 @@
     "outDir": "dist",
     "module": "CommonJS",
     "moduleResolution": "Node",
-    "types": ["node"]
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@chat-app/shared": ["../../packages/shared/src/index.ts"],
+      "@chat-app/shared/*": ["../../packages/shared/src/*"]
+    }
   },
   "include": ["src/**/*", "scripts/**/*", "tests/**/*"]
 }

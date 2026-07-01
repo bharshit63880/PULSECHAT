@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
@@ -16,8 +16,10 @@ import { useAuthStore } from '@/store/auth-store';
 
 const getApiErrorMessage = (error: unknown, fallback: string) =>
   axios.isAxiosError<ApiErrorResponse>(error)
-    ? error.response?.data?.error?.message ?? fallback
+    ? (error.response?.data?.error?.message ?? fallback)
     : fallback;
+
+const triggeredTokens = new Set<string>();
 
 export const VerifyEmailCard = () => {
   const queryClient = useQueryClient();
@@ -27,7 +29,6 @@ export const VerifyEmailCard = () => {
   const token = searchParams.get('token');
   const updateUser = useAuthStore((state) => state.updateUser);
   const clearSession = useAuthStore((state) => state.clearSession);
-  const hasTriggeredVerification = useRef(false);
 
   const redirectToMessenger = () => {
     window.location.replace('/');
@@ -73,7 +74,7 @@ export const VerifyEmailCard = () => {
       }
 
       toast.error(getApiErrorMessage(error, 'This verification link is no longer valid'));
-    }
+    },
   });
 
   const resendMutation = useMutation({
@@ -83,18 +84,18 @@ export const VerifyEmailCard = () => {
     },
     onError: (error) => {
       toast.error(getApiErrorMessage(error, 'Unable to resend verification email'));
-    }
+    },
   });
 
   useEffect(() => {
     if (
       token &&
-      !hasTriggeredVerification.current &&
+      !triggeredTokens.has(token) &&
       !verifyMutation.isPending &&
       !verifyMutation.isSuccess &&
       !verifyMutation.isError
     ) {
-      hasTriggeredVerification.current = true;
+      triggeredTokens.add(token);
       verifyMutation.mutate(token);
     }
   }, [token, verifyMutation]);
@@ -102,10 +103,12 @@ export const VerifyEmailCard = () => {
   const verifiedUser = verifyMutation.data?.user ?? null;
   const currentUserMatchesVerifiedUser = useMemo(
     () => Boolean(user && verifiedUser && user.id === verifiedUser.id),
-    [user, verifiedUser]
+    [user, verifiedUser],
   );
   const isVerified = Boolean(user?.isEmailVerified || verifyMutation.data?.verified);
-  const shouldOpenMessenger = Boolean((user?.isEmailVerified && !verifiedUser) || currentUserMatchesVerifiedUser);
+  const shouldOpenMessenger = Boolean(
+    (user?.isEmailVerified && !verifiedUser) || currentUserMatchesVerifiedUser,
+  );
   const shouldReturnToSignIn = Boolean(isVerified && !shouldOpenMessenger);
   const secondaryAction = () => {
     clearSession();
@@ -142,7 +145,10 @@ export const VerifyEmailCard = () => {
           <div className="flex items-start gap-3">
             <MailCheck className="mt-0.5 h-5 w-5 text-accent" />
             <div className="space-y-2">
-              <p>Verification is required before encrypted chats, uploads, and contact discovery become available.</p>
+              <p>
+                Verification is required before encrypted chats, uploads, and contact discovery
+                become available.
+              </p>
               <p>Check spam or promotions if the email does not arrive within a minute.</p>
             </div>
           </div>
@@ -151,11 +157,18 @@ export const VerifyEmailCard = () => {
 
       <div className="flex flex-col gap-3 sm:flex-row">
         {isVerified ? (
-          <Button fullWidth onClick={() => (shouldOpenMessenger ? redirectToMessenger() : secondaryAction())}>
+          <Button
+            fullWidth
+            onClick={() => (shouldOpenMessenger ? redirectToMessenger() : secondaryAction())}
+          >
             {shouldOpenMessenger ? 'Open messenger' : 'Continue to sign in'}
           </Button>
         ) : (
-          <Button fullWidth onClick={() => resendMutation.mutate()} disabled={!user || resendMutation.isPending}>
+          <Button
+            fullWidth
+            onClick={() => resendMutation.mutate()}
+            disabled={!user || resendMutation.isPending}
+          >
             {resendMutation.isPending ? <Spinner /> : 'Resend verification email'}
           </Button>
         )}
