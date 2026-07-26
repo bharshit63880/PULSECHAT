@@ -6,9 +6,17 @@
 
 ## Product preview
 
-| Private conversations | Profile & account centre |
+| Private conversations | Group creation |
 | --- | --- |
-| ![PulseChat chat workspace](docs/media/chat-workspace.png) | ![PulseChat profile settings](docs/media/profile-settings.png) |
+| ![PulseChat dark chat workspace](docs/media/chat-dark.png) | ![PulseChat group creation](docs/media/group-creation.png) |
+
+| Media sharing | Profile & account centre |
+| --- | --- |
+| ![PulseChat GIF picker](docs/media/gif-picker.png) | ![PulseChat profile settings](docs/media/profile-dark.png) |
+
+| Outgoing call state | Incoming call state |
+| --- | --- |
+| ![PulseChat outgoing call](docs/media/outgoing-call.png) | ![PulseChat incoming call](docs/media/incoming-call.png) |
 
 ## Why PulseChat
 
