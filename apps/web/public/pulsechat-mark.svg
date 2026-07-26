@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="PulseChat">
+  <defs>
+    <linearGradient id="pulse" x1="64" y1="430" x2="445" y2="70" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10c98d"/><stop offset=".52" stop-color="#54e67f"/><stop offset="1" stop-color="#c4fb7a"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="#10161c"/>
+  <path fill="url(#pulse)" d="M103 88h170c96 0 154 59 154 147 0 90-60 148-157 148h-70l-69 65v-91c-18-27-28-60-28-96V88Zm79 70v149l42-40h48c53 0 84-28 84-72 0-43-30-70-83-70H182Z"/>
+  <path d="M104 350h44l19-55 28 96 31-70h49" fill="none" stroke="#10161c" stroke-linecap="round" stroke-linejoin="round" stroke-width="22"/>
+  <g fill="#f8fffb" filter="url(#glow)"><circle cx="238" cy="211" r="12"/><circle cx="279" cy="211" r="12"/><circle cx="320" cy="211" r="12"/></g>
+</svg>

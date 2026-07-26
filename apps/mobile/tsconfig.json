@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "baseUrl": "./src",
+    "types": ["react", "react-native"],
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": ["App.tsx", "src/**/*.ts", "src/**/*.tsx"]
+}

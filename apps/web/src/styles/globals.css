@@ -1,0 +1,175 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --color-bg: 245 247 249;
+  --color-bg-elevated: 250 251 252;
+  --color-card: 255 255 255;
+  --color-card-muted: 241 245 249;
+  --color-line: 226 232 240;
+  --color-accent: 16 150 104;
+  --color-accent-soft: 220 252 231;
+  --color-ink: 17 24 39;
+  --color-muted: 100 116 139;
+  --color-warm: 245 158 11;
+  --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.05);
+  --shadow-float: 0 18px 48px rgba(15, 23, 42, 0.14);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+.dark {
+  color-scheme: dark;
+  --color-bg: 8 15 24;
+  --color-bg-elevated: 12 20 31;
+  --color-card: 15 24 36;
+  --color-card-muted: 20 31 45;
+  --color-line: 39 52 70;
+  --color-accent: 52 211 153;
+  --color-accent-soft: 16 46 39;
+  --color-ink: 232 239 247;
+  --color-muted: 150 166 187;
+  --color-warm: 250 204 21;
+  --shadow-soft: 0 22px 70px rgba(2, 6, 23, 0.28);
+  --shadow-float: 0 36px 110px rgba(2, 6, 23, 0.42);
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-bg text-ink antialiased;
+    margin: 0;
+    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    line-height: 1.55;
+    text-rendering: optimizeLegibility;
+    background: rgb(var(--color-bg));
+  }
+
+  .dark body {
+    background-image:
+      radial-gradient(circle at top left, rgba(52, 211, 153, 0.14), transparent 28%),
+      radial-gradient(circle at right 12%, rgba(56, 189, 248, 0.1), transparent 24%),
+      radial-gradient(circle at bottom center, rgba(250, 204, 21, 0.05), transparent 30%),
+      linear-gradient(180deg, rgba(15, 23, 42, 0.28), rgba(2, 6, 23, 0.12));
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+  }
+
+  *::selection {
+    background: rgba(20, 184, 126, 0.18);
+  }
+
+  *:focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 2px rgba(var(--color-card), 0.82),
+      0 0 0 4px rgba(var(--color-accent), 0.34);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+    background-color: rgba(148, 163, 184, 0.42);
+  }
+
+  img {
+    display: block;
+  }
+
+  button,
+  input,
+  textarea {
+    font: inherit;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    background: rgb(var(--color-card));
+    border: 1px solid rgb(var(--color-line));
+    box-shadow: var(--shadow-soft);
+  }
+
+  .dark .glass-panel {
+    background: linear-gradient(180deg, rgba(15, 24, 36, 0.9), rgba(9, 16, 26, 0.76));
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .glass-card {
+    background: rgb(var(--color-card));
+    border: 1px solid rgb(var(--color-line));
+    box-shadow: var(--shadow-soft);
+  }
+
+  .dark .glass-card {
+    background: linear-gradient(180deg, rgba(15, 24, 36, 0.92), rgba(14, 21, 34, 0.84));
+  }
+
+  .surface-muted {
+    background: rgb(var(--color-card-muted));
+    border: 1px solid rgb(var(--color-line));
+  }
+
+  .chat-canvas {
+    background-color: rgb(var(--color-bg-elevated));
+    background-image: radial-gradient(rgba(148, 163, 184, 0.16) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  .dark .chat-canvas {
+    background-image: radial-gradient(rgba(148, 163, 184, 0.1) 1px, transparent 1px);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .safe-px {
+    padding-left: max(1rem, var(--safe-left));
+    padding-right: max(1rem, var(--safe-right));
+  }
+
+  .safe-pt {
+    padding-top: max(1rem, var(--safe-top));
+  }
+
+  .safe-pb {
+    padding-bottom: max(1rem, var(--safe-bottom));
+  }
+
+  .mobile-nav-blur {
+    background: rgb(var(--color-card));
+  }
+
+  .dark .mobile-nav-blur {
+    background: linear-gradient(180deg, rgba(15, 24, 36, 0.92), rgba(9, 16, 26, 0.86));
+  }
+}
