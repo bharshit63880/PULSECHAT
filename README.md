@@ -2,7 +2,7 @@
 
 > A private, real-time messaging workspace built with React, Node.js, Socket.IO, MongoDB, and browser-side cryptography.
 
-![PulseChat brand](docs/media/pulsechat-brand.png)
+
 
 ## Product preview
 
