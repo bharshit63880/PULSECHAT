@@ -12,16 +12,14 @@ import { createSocketServer } from './sockets/socket-server';
 const bootstrap = async () => {
   await connectDatabase();
   await cacheService.connect();
-  try {
-    await mailService.verifyConnection();
-  } catch (error) {
-    // Email is needed for verification flows, but a temporary SMTP outage must
-    // not take the whole chat service offline.
+  // Email is needed for verification flows, but SMTP availability must never
+  // delay the HTTP server from becoming ready.
+  void mailService.verifyConnection().catch((error) => {
     logger.warn(
       { error: error instanceof Error ? error.message : String(error) },
       'SMTP verification failed; email delivery will remain unavailable until it is fixed'
     );
-  }
+  });
   const ioRef: { current?: ReturnType<typeof createSocketServer> } = {};
   const app = createApp(ioRef);
   const server = http.createServer(app);
