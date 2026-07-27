@@ -12,7 +12,16 @@ import { createSocketServer } from './sockets/socket-server';
 const bootstrap = async () => {
   await connectDatabase();
   await cacheService.connect();
-  await mailService.verifyConnection();
+  try {
+    await mailService.verifyConnection();
+  } catch (error) {
+    // Email is needed for verification flows, but a temporary SMTP outage must
+    // not take the whole chat service offline.
+    logger.warn(
+      { error: error instanceof Error ? error.message : String(error) },
+      'SMTP verification failed; email delivery will remain unavailable until it is fixed'
+    );
+  }
   const ioRef: { current?: ReturnType<typeof createSocketServer> } = {};
   const app = createApp(ioRef);
   const server = http.createServer(app);
@@ -42,6 +51,13 @@ const bootstrap = async () => {
 };
 
 bootstrap().catch((error) => {
-  logger.error({ error }, 'Failed to bootstrap server');
+  logger.error(
+    {
+      error: error instanceof Error
+        ? { name: error.name, message: error.message, stack: error.stack }
+        : String(error)
+    },
+    'Failed to bootstrap server'
+  );
   process.exit(1);
 });
