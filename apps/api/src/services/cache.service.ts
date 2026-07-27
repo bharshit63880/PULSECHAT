@@ -62,7 +62,15 @@ const connectRedisClients = async () => {
   }
 
   try {
-    commandClient = createClient({ url: env.REDIS_URL });
+    // Redis is an optional optimization. A failed external Redis connection must
+    // never prevent a single-instance deployment from binding its HTTP port.
+    commandClient = createClient({
+      url: env.REDIS_URL,
+      socket: {
+        connectTimeout: 3_000,
+        reconnectStrategy: false
+      }
+    });
     pubClient = commandClient.duplicate();
     subClient = commandClient.duplicate();
 
