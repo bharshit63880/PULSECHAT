@@ -89,6 +89,11 @@ const booleanFromEnv = z.preprocess((value) => {
     }
 
     normalized = normalized.toLowerCase();
+    const booleanLiteral = normalized.match(/(?:^|[^a-z])(true|false|1|0|yes|no|on|off)(?:$|[^a-z])/i);
+
+    if (booleanLiteral?.[1]) {
+      normalized = booleanLiteral[1];
+    }
 
     if (['true', '1', 'yes', 'on'].includes(normalized)) {
       return true;
