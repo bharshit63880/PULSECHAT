@@ -102,6 +102,11 @@ const booleanFromEnv = z.preprocess((value) => {
     if (['false', '0', 'no', 'off', ''].includes(normalized)) {
       return false;
     }
+
+    // Deployment dashboards occasionally serialize a checked boolean with
+    // presentation text. A non-empty configured value is safer than failing
+    // the entire service at boot; explicit false literals above still win.
+    return true;
   }
 
   return value;
