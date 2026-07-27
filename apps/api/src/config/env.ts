@@ -38,6 +38,32 @@ const optionalTrimmedStringFromEnv = () =>
     return normalized.length > 0 ? normalized : undefined;
   }, z.string().min(1).optional());
 
+const mongoUriFromEnv = () =>
+  z.preprocess((value) => {
+    if (typeof value !== 'string') {
+      return value;
+    }
+
+    let normalized = value.trim();
+    // Providers such as Render already attach the variable name. Accept a
+    // pasted `MONGODB_URI=...` line as well as the URL-only value.
+    const assignment = normalized.match(/^MONGODB_URI\s*=\s*(.+)$/i);
+
+    if (assignment) {
+      normalized = assignment[1]?.trim() ?? '';
+    }
+
+    if (
+      normalized.length >= 2 &&
+      ((normalized.startsWith('"') && normalized.endsWith('"')) ||
+        (normalized.startsWith("'") && normalized.endsWith("'")))
+    ) {
+      normalized = normalized.slice(1, -1).trim();
+    }
+
+    return normalized.length > 0 ? normalized : undefined;
+  }, z.string().min(1));
+
 const optionalPortFromEnv = () =>
   z.preprocess((value) => {
     if (typeof value === 'string' && value.trim().length === 0) {
@@ -80,7 +106,7 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(5000),
   CLIENT_URL: z.string().url().default('http://localhost:5173'),
-  MONGODB_URI: requiredTrimmedStringFromEnv(),
+  MONGODB_URI: mongoUriFromEnv(),
   REDIS_URL: optionalTrimmedStringFromEnv(),
   REDIS_KEY_PREFIX: requiredTrimmedStringFromEnv().default('pulse'),
   CHAT_LIST_CACHE_TTL_SEC: z.coerce.number().int().positive().default(45),
