@@ -79,7 +79,16 @@ const booleanFromEnv = z.preprocess((value) => {
   }
 
   if (typeof value === 'string') {
-    const normalized = value.trim().toLowerCase();
+    let normalized = value.trim();
+    // Environment dashboards already have a separate key field. Be tolerant of
+    // a pasted `COOKIE_SECURE=true`-style assignment in the value field.
+    const assignment = normalized.match(/^[A-Z][A-Z0-9_]*\s*=\s*(.+)$/);
+
+    if (assignment) {
+      normalized = assignment[1]?.trim() ?? '';
+    }
+
+    normalized = normalized.toLowerCase();
 
     if (['true', '1', 'yes', 'on'].includes(normalized)) {
       return true;
