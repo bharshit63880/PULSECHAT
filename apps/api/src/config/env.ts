@@ -93,6 +93,7 @@ const envSchema = z.object({
   ),
   REFRESH_TOKEN_EXPIRES_IN: requiredTrimmedStringFromEnv().default('30d'),
   COOKIE_SECURE: booleanFromEnv.default(false),
+  COOKIE_SAME_SITE: z.enum(['lax', 'strict', 'none']).default('lax'),
   COOKIE_DOMAIN: optionalTrimmedStringFromEnv(),
   APP_URL: z.string().url().default('http://localhost:5173'),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900000),
@@ -193,6 +194,14 @@ const envSchema = z.object({
         message: 'COOKIE_SECURE must be enabled in production'
       });
     }
+  }
+
+  if (data.COOKIE_SAME_SITE === 'none' && !data.COOKIE_SECURE) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['COOKIE_SAME_SITE'],
+      message: 'COOKIE_SAME_SITE=none requires COOKIE_SECURE=true'
+    });
   }
 });
 

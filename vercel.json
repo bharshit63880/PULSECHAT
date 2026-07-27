@@ -1,0 +1,6 @@
+{
+  "installCommand": "npm ci --include=dev",
+  "buildCommand": "npm run build -w @chat-app/shared && npm run build -w @chat-app/web",
+  "outputDirectory": "apps/web/dist",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
