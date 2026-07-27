@@ -82,7 +82,7 @@ export const LoginForm = () => {
           <label className="mb-2 block text-sm font-semibold text-ink">Email</label>
           <div className="relative">
             <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
-            <Input type="email" placeholder="you@company.com" className="pl-11" {...form.register('email')} />
+            <Input type="email" placeholder="Your email" className="pl-11" {...form.register('email')} />
           </div>
           <p className="mt-1.5 text-xs text-rose-500">{form.formState.errors.email?.message}</p>
         </div>
