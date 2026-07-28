@@ -123,7 +123,7 @@ Key configuration groups:
 
 - **Core:** `MONGODB_URI`, `JWT_SECRET`, `REFRESH_TOKEN_SECRET`, `CLIENT_URL`, `APP_URL`
 - **Realtime:** `REDIS_URL`, `REDIS_KEY_PREFIX`
-- **Mail:** `RESEND_API_KEY`, `RESEND_FROM` (recommended for hosted deployments), or SMTP variables for environments that allow SMTP egress
+- **Mail:** `BREVO_API_KEY`, `BREVO_FROM` (a verified sender email; suitable for public hosted deployments), `RESEND_API_KEY` / `RESEND_FROM`, or SMTP variables for environments that allow SMTP egress
 - **Uploads:** `UPLOAD_PROVIDER`, Cloudinary or S3 variables
 - **Web:** `VITE_API_URL`, `VITE_SOCKET_URL`, `VITE_GIPHY_API_KEY`
 

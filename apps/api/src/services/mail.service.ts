@@ -2,7 +2,7 @@ import nodemailer from 'nodemailer';
 import type SMTPTransport from 'nodemailer/lib/smtp-transport';
 import type { Transporter } from 'nodemailer';
 
-import { env, hasResendConfig, hasSmtpConfig, smtpConfig } from '../config/env';
+import { env, hasBrevoConfig, hasResendConfig, hasSmtpConfig, smtpConfig } from '../config/env';
 import { AppError } from '../errors/AppError';
 import { logger } from './logger.service';
 
@@ -141,8 +141,51 @@ const sendWithResend = async ({ to, subject, html, text }: MailMessage) => {
   return true;
 };
 
+const getBrevoSender = () => {
+  const configuredSender = env.BREVO_FROM!;
+  const namedSender = configuredSender.match(/^(.*?)\s*<([^>]+)>$/);
+
+  return namedSender
+    ? { name: namedSender[1]?.trim() || 'Pulse Chat', email: namedSender[2]!.trim() }
+    : { name: 'Pulse Chat', email: configuredSender };
+};
+
+const sendWithBrevo = async ({ to, subject, html, text }: MailMessage) => {
+  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      accept: 'application/json',
+      'api-key': env.BREVO_API_KEY!,
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      sender: getBrevoSender(),
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+      textContent: text
+    })
+  });
+
+  if (!response.ok) {
+    const details = await response.text();
+    logger.error(
+      { status: response.status, details: details.slice(0, 500), to: maskEmail(to) },
+      'Brevo email send failed'
+    );
+    throw new AppError('Email delivery is temporarily unavailable. Please try again shortly.', 503, 'EMAIL_DELIVERY_FAILED');
+  }
+
+  return true;
+};
+
 export const mailService = {
   async verifyConnection() {
+    if (hasBrevoConfig) {
+      logger.info({ brevoFrom: env.BREVO_FROM }, 'Brevo email delivery configured');
+      return;
+    }
+
     if (hasResendConfig) {
       logger.info({ resendFrom: env.RESEND_FROM ?? 'Pulse Chat <onboarding@resend.dev>' }, 'Resend email delivery configured');
       return;
@@ -204,6 +247,10 @@ export const mailService = {
   },
 
   async send({ to, subject, html, text }: MailMessage) {
+    if (hasBrevoConfig) {
+      return sendWithBrevo({ to, subject, html, text });
+    }
+
     if (hasResendConfig) {
       return sendWithResend({ to, subject, html, text });
     }
