@@ -2,7 +2,7 @@ import nodemailer from 'nodemailer';
 import type SMTPTransport from 'nodemailer/lib/smtp-transport';
 import type { Transporter } from 'nodemailer';
 
-import { env, hasSmtpConfig, smtpConfig } from '../config/env';
+import { env, hasResendConfig, hasSmtpConfig, smtpConfig } from '../config/env';
 import { AppError } from '../errors/AppError';
 import { logger } from './logger.service';
 
@@ -104,8 +104,41 @@ const getTransporter = (): Transporter<SMTPTransport.SentMessageInfo> | null => 
   return cachedTransporter;
 };
 
+const sendWithResend = async ({ to, subject, html, text }: MailMessage) => {
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      from: env.RESEND_FROM ?? 'Pulse Chat <onboarding@resend.dev>',
+      to: [to],
+      subject,
+      html,
+      text
+    })
+  });
+
+  if (!response.ok) {
+    const details = await response.text();
+    logger.error(
+      { status: response.status, details: details.slice(0, 500), to: maskEmail(to) },
+      'Resend email send failed'
+    );
+    throw new AppError('Email delivery is temporarily unavailable. Please try again shortly.', 503, 'EMAIL_DELIVERY_FAILED');
+  }
+
+  return true;
+};
+
 export const mailService = {
   async verifyConnection() {
+    if (hasResendConfig) {
+      logger.info({ resendFrom: env.RESEND_FROM ?? 'Pulse Chat <onboarding@resend.dev>' }, 'Resend email delivery configured');
+      return;
+    }
+
     if (!hasSmtpConfig) {
       if (env.NODE_ENV !== 'production') {
         logger.warn('SMTP is not configured; email delivery is disabled');
@@ -162,6 +195,10 @@ export const mailService = {
   },
 
   async send({ to, subject, html, text }: MailMessage) {
+    if (hasResendConfig) {
+      return sendWithResend({ to, subject, html, text });
+    }
+
     if (!hasSmtpConfig) {
       if (env.NODE_ENV === 'production') {
         throw new AppError(

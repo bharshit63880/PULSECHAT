@@ -152,6 +152,8 @@ const envSchema = z.object({
   SMTP_USER: optionalTrimmedStringFromEnv(),
   SMTP_PASS: optionalTrimmedStringFromEnv(),
   MAIL_FROM: optionalTrimmedStringFromEnv(),
+  RESEND_API_KEY: optionalTrimmedStringFromEnv(),
+  RESEND_FROM: optionalTrimmedStringFromEnv(),
   CLOUDINARY_CLOUD_NAME: optionalTrimmedStringFromEnv(),
   CLOUDINARY_API_KEY: optionalTrimmedStringFromEnv(),
   CLOUDINARY_API_SECRET: optionalTrimmedStringFromEnv(),
@@ -278,4 +280,5 @@ export const hasS3Config =
   Boolean(env.S3_SECRET_ACCESS_KEY);
 
 export const hasSmtpConfig = Boolean(smtpConfig?.from && smtpConfig.user && smtpConfig.pass);
+export const hasResendConfig = Boolean(env.RESEND_API_KEY);
 export const hasRedisConfig = Boolean(env.REDIS_URL);

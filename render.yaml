@@ -45,6 +45,10 @@ services:
         sync: false
       - key: MAIL_FROM
         sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM
+        value: Pulse Chat <onboarding@resend.dev>
       - key: UPLOAD_PROVIDER
         value: cloudinary
       - key: CLOUDINARY_CLOUD_NAME
