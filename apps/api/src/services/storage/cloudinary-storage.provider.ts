@@ -7,12 +7,16 @@ import { logger } from '../logger.service';
 import type { StorageProvider, StoredAsset, UploadedFile } from './storage.types';
 import { resolveAssetType, sanitizeFileName } from './storage.utils';
 
-const uploadBuffer = (file: UploadedFile, folder: string): Promise<UploadApiResponse> =>
+const uploadBuffer = (
+  file: UploadedFile,
+  folder: string,
+  resourceType: 'image' | 'raw'
+): Promise<UploadApiResponse> =>
   new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         folder,
-        resource_type: 'auto'
+        resource_type: resourceType
       },
       (error, result) => {
         if (error || !result) {
@@ -39,7 +43,7 @@ const toStoredAsset = (file: UploadedFile, uploaded: UploadApiResponse): StoredA
 export const cloudinaryStorageProvider: StorageProvider = {
   async uploadAvatar(file) {
     try {
-      const uploaded = await uploadBuffer(file, 'chat-app/avatars');
+      const uploaded = await uploadBuffer(file, 'chat-app/avatars', 'image');
       return toStoredAsset(file, uploaded);
     } catch (error) {
       logger.error({ error }, 'Avatar upload failed');
@@ -52,10 +56,11 @@ export const cloudinaryStorageProvider: StorageProvider = {
   },
 
   async uploadAttachment(file) {
-    const folder = file.mimetype.startsWith('image/') ? 'chat-app/images' : 'chat-app/files';
-
     try {
-      const uploaded = await uploadBuffer(file, folder);
+      // Attachments arrive already encrypted, so their ciphertext is binary data even when the
+      // original file was an image. Upload it as a raw asset to avoid Cloudinary trying to decode
+      // ciphertext as an image or video.
+      const uploaded = await uploadBuffer(file, 'chat-app/files', 'raw');
       return toStoredAsset(file, uploaded);
     } catch (error) {
       logger.error({ error, mimeType: file.mimetype, size: file.size }, 'Encrypted attachment upload failed');
