@@ -58,7 +58,15 @@ export const authService = {
       isOnline: false
     });
 
-    await emailVerificationService.issueVerification(user, { bypassCooldown: true });
+    try {
+      await emailVerificationService.issueVerification(user, { bypassCooldown: true });
+    } catch (error) {
+      // Do not leave an unreachable, unverified account behind when the
+      // initial verification message cannot be delivered. The user can retry
+      // registration after correcting their email-delivery setup.
+      await UserModel.findByIdAndDelete(user.id);
+      throw error;
+    }
 
     return authSessionService.createSession(user.id, input.device);
   },

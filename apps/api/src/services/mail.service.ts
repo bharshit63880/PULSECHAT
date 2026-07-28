@@ -126,6 +126,15 @@ const sendWithResend = async ({ to, subject, html, text }: MailMessage) => {
       { status: response.status, details: details.slice(0, 500), to: maskEmail(to) },
       'Resend email send failed'
     );
+
+    if (response.status === 403 && details.toLowerCase().includes('verify a domain')) {
+      throw new AppError(
+        'Email delivery is in test mode. Use the owner email address, or verify a sending domain before sending to other Gmail addresses.',
+        403,
+        'EMAIL_DELIVERY_RESTRICTED'
+      );
+    }
+
     throw new AppError('Email delivery is temporarily unavailable. Please try again shortly.', 503, 'EMAIL_DELIVERY_FAILED');
   }
 
