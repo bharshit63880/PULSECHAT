@@ -33,6 +33,12 @@ The automated quality gate runs linting, type checking, production builds, API t
 - Browser key storage depends on IndexedDB and has no encrypted backup/export or recovery workflow.
 - Existing tests are focused API/unit/integration checks; they do not replace independent security review, load testing, mobile-device testing, or a real provider smoke test.
 
+## Dependency-audit scope
+
+- The API and Web production dependency audits currently have no high or critical findings. The Socket.IO server/client, Engine.IO, WebSocket, and Redis-adapter dependency family is pinned to compatible patched releases.
+- The Mobile production audit still reports high advisories through Expo SDK 55's Expo CLI/Metro bundling chain (`expo` → Expo CLI/Metro → `image-size`). These packages run while developing or exporting a native bundle; they are not executed by the deployed API, the Vite Web build, or inside the installed application message runtime.
+- There is no safe standalone override for that chain without moving beyond the currently supported Expo SDK release. The compensating controls are to keep Expo SDK 55 aligned (Expo Doctor is clean), run mobile exports only in trusted CI/developer environments, and avoid processing untrusted project assets during the export step. Reassess when Expo publishes an SDK-compatible upstream update.
+
 ## Free-tier deployment limitation
 
 Render Free can sleep after inactivity, which interrupts WebSocket clients and can delay the first API request by roughly a minute. It is appropriate for a demo, not availability-sensitive messaging.
