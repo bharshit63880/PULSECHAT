@@ -35,6 +35,9 @@
     "prettier": "^3.5.3",
     "typescript": "^5.8.2"
   },
+  "overrides": {
+    "shell-quote": "1.10.0"
+  },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,json,md}": [
       "prettier --write"
