@@ -2,20 +2,18 @@
 
 > A private, real-time messaging workspace built with React, Node.js, Socket.IO, MongoDB, and browser-side cryptography.
 
-
-
 ## Product preview
 
-| Private conversations | Group creation |
-| --- | --- |
+| Private conversations                                      | Group creation                                             |
+| ---------------------------------------------------------- | ---------------------------------------------------------- |
 | ![PulseChat dark chat workspace](docs/media/chat-dark.png) | ![PulseChat group creation](docs/media/group-creation.png) |
 
-| Media sharing | Profile & account centre |
-| --- | --- |
+| Media sharing                                      | Profile & account centre                                   |
+| -------------------------------------------------- | ---------------------------------------------------------- |
 | ![PulseChat GIF picker](docs/media/gif-picker.png) | ![PulseChat profile settings](docs/media/profile-dark.png) |
 
-| Outgoing call state | Incoming call state |
-| --- | --- |
+| Outgoing call state                                      | Incoming call state                                      |
+| -------------------------------------------------------- | -------------------------------------------------------- |
 | ![PulseChat outgoing call](docs/media/outgoing-call.png) | ![PulseChat incoming call](docs/media/incoming-call.png) |
 
 ## Why PulseChat
@@ -45,12 +43,12 @@ flowchart LR
   A --> S[Cloudinary or S3]
 ```
 
-| Layer | Responsibilities |
-| --- | --- |
-| `apps/web` | React UI, local device keys, direct-message encryption, decrypted local search, sockets, media UX |
-| `apps/api` | Authentication, device sessions, public-key distribution, ciphertext persistence, uploads, notifications, Socket.IO |
-| `apps/mobile` | Expo mobile scaffold, secure auth/session boundary, direct-chat surfaces |
-| `packages/shared` | DTOs, Zod schemas, socket event constants, and response helpers |
+| Layer             | Responsibilities                                                                                                    |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `apps/web`        | React UI, local device keys, direct-message encryption, decrypted local search, sockets, media UX                   |
+| `apps/api`        | Authentication, device sessions, public-key distribution, ciphertext persistence, uploads, notifications, Socket.IO |
+| `apps/mobile`     | Expo mobile scaffold, secure auth/session boundary, direct-chat surfaces                                            |
+| `packages/shared` | DTOs, Zod schemas, socket event constants, and response helpers                                                     |
 
 ## Security model
 
@@ -81,11 +79,11 @@ npm run dev
 
 Default development addresses:
 
-| Service | Address |
-| --- | --- |
-| Web | `http://localhost:5173` |
-| API | `http://localhost:5000/api/v1` |
-| Mobile | `npm run dev:mobile` |
+| Service | Address                        |
+| ------- | ------------------------------ |
+| Web     | `http://localhost:5173`        |
+| API     | `http://localhost:5000/api/v1` |
+| Mobile  | `npm run dev:mobile`           |
 
 For the local container stack:
 
@@ -97,12 +95,12 @@ docker compose up --build
 
 After seeding:
 
-| Email | Password |
-| --- | --- |
+| Email               | Password       |
+| ------------------- | -------------- |
 | `aarav@example.com` | `Password123!` |
-| `sara@example.com` | `Password123!` |
+| `sara@example.com`  | `Password123!` |
 | `rohan@example.com` | `Password123!` |
-| `nina@example.com` | `Password123!` |
+| `nina@example.com`  | `Password123!` |
 
 ## Commands
 
@@ -136,6 +134,8 @@ For deployment prerequisites, see [deployment documentation](docs/deployment.md)
 - [Socket events](docs/socket-events.md)
 - [Testing](docs/testing.md)
 - [Encryption and privacy limits](docs/e2ee.md)
+- [Production readiness and known limitations](docs/production-readiness.md)
+- [Security reporting policy](SECURITY.md)
 
 ## Roadmap
 

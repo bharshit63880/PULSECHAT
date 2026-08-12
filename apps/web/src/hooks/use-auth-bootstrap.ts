@@ -1,34 +1,47 @@
 import { useEffect } from 'react';
 
-import { useQuery } from '@tanstack/react-query';
+import { authApi } from '@/features/auth/api';
+import { clearLegacyPersistedAuth, useAuthStore } from '@/store/auth-store';
 
-import { api } from '@/lib/axios';
-import { useAuthStore } from '@/store/auth-store';
+let refreshInFlight: ReturnType<typeof authApi.refresh> | null = null;
 
-export const useAuthBootstrap = () => {
-  const token = useAuthStore((state) => state.token);
-  const updateUser = useAuthStore((state) => state.updateUser);
-  const clearSession = useAuthStore((state) => state.clearSession);
-
-  const query = useQuery({
-    queryKey: ['auth', 'me'],
-    queryFn: async () => {
-      const response = await api.get('/auth/me');
-      return response.data.data;
-    },
-    enabled: Boolean(token),
-    retry: false
+const restoreSession = () => {
+  refreshInFlight ??= authApi.refresh().finally(() => {
+    refreshInFlight = null;
   });
 
+  return refreshInFlight;
+};
+
+export const useAuthBootstrap = () => {
+  const isBootstrapped = useAuthStore((state) => state.isBootstrapped);
+  const setSession = useAuthStore((state) => state.setSession);
+  const clearSession = useAuthStore((state) => state.clearSession);
+
   useEffect(() => {
-    if (query.isSuccess) {
-      updateUser(query.data);
+    if (isBootstrapped) {
+      return;
     }
 
-    if (query.isError) {
-      clearSession();
-    }
-  }, [clearSession, query.data, query.isError, query.isSuccess, updateUser]);
+    clearLegacyPersistedAuth();
+    let active = true;
 
-  return query;
+    void restoreSession()
+      .then((session) => {
+        if (active) {
+          setSession(session);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          clearSession();
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [clearSession, isBootstrapped, setSession]);
+
+  return { isLoading: !isBootstrapped };
 };

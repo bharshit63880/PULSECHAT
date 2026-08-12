@@ -19,3 +19,7 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run build
+      - run: npm test
+      - run: npm run mobile:lint
+      - run: npm run mobile:typecheck
+      - run: npm run ci:secrets

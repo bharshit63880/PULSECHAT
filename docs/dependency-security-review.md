@@ -1,0 +1,84 @@
+# Dependency Security Review
+
+Reviewed: 2026-08-12  
+Scope: `fix/production-readiness` before dependency modernization.
+
+## Baseline
+
+`npm audit --omit=dev` reported the following production-install counts:
+
+| Workspace | Critical | High | Notes                                                    |
+| --------- | -------: | ---: | -------------------------------------------------------- |
+| API       |        0 |    9 | Node/Socket.IO and mail runtime dependencies             |
+| Web       |        0 |    6 | Browser bundle dependencies                              |
+| Mobile    |        1 |   18 | npm treats Expo/Metro tooling as production dependencies |
+
+The complete root install additionally reported 3 critical and 26 high findings. Two of
+those critical findings are development tooling (`vitest` and `concurrently`); they do
+not run in the deployed API or web bundle.
+
+## Reachability matrix
+
+| Advisory package / identifier                                                                                                                                | Dependency path and workspace                                    | Classification                                                             | PulseChat use and reachability                                                                                                                                          | Planned action / risk                                                                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `nodemailer` / GHSA-c7w3-x93f-qmm8 and related advisories                                                                                                    | direct API dependency; `mail.service.ts` creates SMTP transports | Runtime-reachable production                                               | Sends verification, reset, and transactional mail. The affected transport is called with application-generated subjects and HTML.                                       | Upgrade to v9 and cover the transport with mocks. High priority.                                                                                                                    |
+| `engine.io`, `socket.io-parser`, `ws` / GHSA-r635-g3xr-vw7x, GHSA-2m8v-j782-fhvr, GHSA-58qx-3vcg-4xpx, GHSA-96hv-2xvq-fx4p                                   | `socket.io` API server; `socket.io-client` web/mobile clients    | Runtime-reachable production                                               | Socket.IO accepts untrusted connections and payload framing for chat, presence, typing and calls.                                                                       | Keep server/client aligned at the newest compatible release; retain request limits and authentication. Blocks release if a patched compatible release is available but not applied. |
+| `react-router` / GHSA-qwww-vcr4-c8h2                                                                                                                         | direct `react-router-dom` web dependency                         | Runtime-reachable web bundle                                               | Web router is bundled. PulseChat does not use React Server Components/actions, so the reported RSC mode path is not enabled, but the vulnerable version is unnecessary. | Patch to 7.18.2. Low risk.                                                                                                                                                          |
+| `path-to-regexp` / GHSA-37ch-88jc-xwx2                                                                                                                       | Express routing in API                                           | Runtime-reachable production                                               | API route matching consumes request paths.                                                                                                                              | Update through its owning Express dependency when a compatible fix is available; do not hand-edit transitive packages.                                                              |
+| `form-data`, `fast-xml-builder`, `lodash`, `nanoid`                                                                                                          | transitive API/Web packages                                      | Runtime-reachable library, affected API not directly imported by PulseChat | No direct PulseChat imports were found. They are reached through HTTP/SDK internals; their affected parsing/generation APIs are not called directly by app code.        | Upgrade owning packages or compatible overrides only after dependency-tree verification.                                                                                            |
+| `vite`, `postcss`                                                                                                                                            | direct API/Web dev dependencies                                  | Development-only                                                           | Used for local development/build; neither starts in Render nor is bundled as application runtime code.                                                                  | Patch when a compatible Vite 6 release exists; otherwise document separately. Does not block deployed runtime on its own.                                                           |
+| `vitest` / GHSA-5xrq-8626-4rwp                                                                                                                               | API dev dependency                                               | Development-only                                                           | Test runner; the vulnerable UI server is not enabled in project scripts or production.                                                                                  | Patch within Vitest 3 first. Low risk.                                                                                                                                              |
+| `concurrently` -> `shell-quote` / GHSA-w7jw-789q-3m8p, GHSA-395f-4hp3-45gv                                                                                   | root `dev` script                                                | Development-only                                                           | Used only to start local workspace processes. It is never imported by API, web, or mobile code.                                                                         | Update the transitive package through a narrow override after compatibility check.                                                                                                  |
+| `react-native` -> `react-devtools-core` -> `shell-quote`                                                                                                     | Expo SDK 55 / React Native developer tooling                     | Build-time/mobile tooling                                                  | `shell-quote` is used by React DevTools/Metro-side tooling. No PulseChat source import exists and it is not part of the JavaScript application bundle.                  | Apply a compatible patched `shell-quote` override. This is not a shipped-mobile-runtime critical.                                                                                   |
+| `expo`, `@expo/cli`, `@expo/metro*`, `metro*`, `@react-native/community-cli-plugin`, `image-size`, `@xmldom/xmldom`, `brace-expansion`, `js-yaml`, `postcss` | Expo SDK 55 CLI, bundler and build dependency tree               | Build-time/mobile tooling                                                  | Invoked by `expo start`, bundling, prebuild or development tools. The app does not import their CLIs.                                                                   | Align all declared packages to official Expo SDK 55 patch versions, run Expo Doctor/config/bundle validation, and do not apply npm's incompatible React Native 0.72 suggestion.     |
+
+## Controls and release decision rules
+
+- No source file imports `shell-quote` or `concurrently`.
+- The mobile application uses `socket.io-client`; Socket.IO transport advisories remain
+  security-relevant until their owning release has been verified.
+- A finding may remain only when it is demonstrably tooling-only, not shipped, lacks a
+  compatible upstream patch, and its compensating controls are recorded here.
+- A reachable critical or high issue in the deployed API, web bundle, or shipped mobile
+  runtime blocks release.
+
+## Modernization result
+
+The following verified changes were applied after the baseline review:
+
+| Area                | Change                                                                                            | Verification                                                                                                         |
+| ------------------- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Web routing         | `react-router-dom` 7.18.1 → 7.18.2                                                                | Web lint, type-check and production build passed. The React Router advisory is no longer reported.                   |
+| API email           | `nodemailer` 7.0.13 → 9.0.5                                                                       | API lint, type-check, build, and mocked SMTP verify/send test passed. Nodemailer advisories are no longer reported.  |
+| Development tooling | `vitest` 3.2.4 → 3.2.6 and `shell-quote` 1.10.0 override                                          | Full API test suite passed. The Vitest and shell-quote critical findings are no longer reported.                     |
+| Mobile SDK          | Expo SDK 55 package set aligned to Expo's expected patch versions, including React Native 0.83.10 | Expo package check and Expo Doctor pass 19/19; mobile lint/type-check pass; a local 928-module web export succeeded. |
+
+### After-state audit counts
+
+The following counts are from `npm audit --omit=dev` after the above changes:
+
+| Workspace                           | Critical | High | Moderate | Low |
+| ----------------------------------- | -------: | ---: | -------: | --: |
+| API                                 |        0 |    7 |        6 |   0 |
+| Web                                 |        0 |    3 |        2 |   1 |
+| Mobile                              |        0 |   15 |        7 |   1 |
+| Root                                |        0 |   19 |       13 |   1 |
+| Root, including development tooling |        0 |   20 |       13 |   2 |
+
+### Remaining advisories and release status
+
+- API/Web: remaining highs are transitive `engine.io`, `ws`, `form-data`,
+  `fast-xml-builder`, `lodash`, and Express's legacy `path-to-regexp` chain. The
+  currently installed Socket.IO 4.8.3 is the latest published Socket.IO release; the
+  available audit changes require a broad lockfile rewrite or an owner-package major
+  migration, neither of which was validated in this focused upgrade.
+- Mobile: remaining high findings are in the Expo SDK 55 CLI/Metro toolchain. They are
+  build-time tooling, not imported by the shipped application bundle. npm proposes an
+  incompatible React Native 0.72 / Expo 53 downgrade for several of them; it was not
+  applied. `shell-quote`, the only critical finding, is patched and no longer reported.
+
+**Decision: still blocked for a strict zero-reachable-high release gate.** There are no
+critical advisories remaining, but the API Socket.IO/Engine.IO and `ws` chains are
+runtime-reachable and must be resolved through a tested upstream Socket.IO release (or a
+fully tested transport migration) before claiming a clean production release. The
+tooling-only Expo residuals do not by themselves block the shipped mobile runtime.

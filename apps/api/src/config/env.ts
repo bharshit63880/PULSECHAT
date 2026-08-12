@@ -4,6 +4,8 @@ import path from 'node:path';
 import dotenv from 'dotenv';
 import { z } from 'zod';
 
+import { normalizeEnvironmentString } from './env-value';
+
 const envCandidates = [
   path.resolve(process.cwd(), '.env'),
   path.resolve(__dirname, '../../../../.env'),
@@ -28,13 +30,13 @@ const requiredTrimmedStringFromEnv = (minimum = 1, message?: string) =>
     return normalized.length > 0 ? normalized : undefined;
   }, z.string().min(minimum, message));
 
-const optionalTrimmedStringFromEnv = () =>
+const optionalTrimmedStringFromEnv = (variableName?: string) =>
   z.preprocess((value) => {
     if (typeof value !== 'string') {
       return value;
     }
 
-    const normalized = value.trim();
+    const normalized = normalizeEnvironmentString(value, variableName);
     return normalized.length > 0 ? normalized : undefined;
   }, z.string().min(1).optional());
 
@@ -156,9 +158,9 @@ const envSchema = z.object({
   BREVO_FROM: optionalTrimmedStringFromEnv(),
   RESEND_API_KEY: optionalTrimmedStringFromEnv(),
   RESEND_FROM: optionalTrimmedStringFromEnv(),
-  CLOUDINARY_CLOUD_NAME: optionalTrimmedStringFromEnv(),
-  CLOUDINARY_API_KEY: optionalTrimmedStringFromEnv(),
-  CLOUDINARY_API_SECRET: optionalTrimmedStringFromEnv(),
+  CLOUDINARY_CLOUD_NAME: optionalTrimmedStringFromEnv('CLOUDINARY_CLOUD_NAME'),
+  CLOUDINARY_API_KEY: optionalTrimmedStringFromEnv('CLOUDINARY_API_KEY'),
+  CLOUDINARY_API_SECRET: optionalTrimmedStringFromEnv('CLOUDINARY_API_SECRET'),
   S3_BUCKET: optionalTrimmedStringFromEnv(),
   S3_REGION: optionalTrimmedStringFromEnv(),
   S3_ENDPOINT: optionalTrimmedStringFromEnv(),
