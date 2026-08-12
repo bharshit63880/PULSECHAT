@@ -94,6 +94,11 @@ This repository includes [`vercel.json`](../vercel.json) and [`render.yaml`](../
 - attachment uploads store encrypted blobs, not plaintext payloads
 - avatars are not end-to-end encrypted
 - use folder separation for avatars vs encrypted attachments
+- In Render, create three separate environment entries for `CLOUDINARY_CLOUD_NAME`,
+  `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET`. Put only the value in each
+  value field—not `CLOUDINARY_API_KEY=...` or an entire `.env` file. The API
+  tolerates an accidentally pasted Cloudinary assignment, but the dashboard
+  should still contain the clean value.
 
 ## Frontend Deployment
 
