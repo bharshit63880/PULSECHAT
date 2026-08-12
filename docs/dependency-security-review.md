@@ -41,3 +41,44 @@ not run in the deployed API or web bundle.
   compatible upstream patch, and its compensating controls are recorded here.
 - A reachable critical or high issue in the deployed API, web bundle, or shipped mobile
   runtime blocks release.
+
+## Modernization result
+
+The following verified changes were applied after the baseline review:
+
+| Area                | Change                                                                                            | Verification                                                                                                         |
+| ------------------- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Web routing         | `react-router-dom` 7.18.1 → 7.18.2                                                                | Web lint, type-check and production build passed. The React Router advisory is no longer reported.                   |
+| API email           | `nodemailer` 7.0.13 → 9.0.5                                                                       | API lint, type-check, build, and mocked SMTP verify/send test passed. Nodemailer advisories are no longer reported.  |
+| Development tooling | `vitest` 3.2.4 → 3.2.6 and `shell-quote` 1.10.0 override                                          | Full API test suite passed. The Vitest and shell-quote critical findings are no longer reported.                     |
+| Mobile SDK          | Expo SDK 55 package set aligned to Expo's expected patch versions, including React Native 0.83.10 | Expo package check and Expo Doctor pass 19/19; mobile lint/type-check pass; a local 928-module web export succeeded. |
+
+### After-state audit counts
+
+The following counts are from `npm audit --omit=dev` after the above changes:
+
+| Workspace                           | Critical | High | Moderate | Low |
+| ----------------------------------- | -------: | ---: | -------: | --: |
+| API                                 |        0 |    7 |        6 |   0 |
+| Web                                 |        0 |    3 |        2 |   1 |
+| Mobile                              |        0 |   15 |        7 |   1 |
+| Root                                |        0 |   19 |       13 |   1 |
+| Root, including development tooling |        0 |   20 |       13 |   2 |
+
+### Remaining advisories and release status
+
+- API/Web: remaining highs are transitive `engine.io`, `ws`, `form-data`,
+  `fast-xml-builder`, `lodash`, and Express's legacy `path-to-regexp` chain. The
+  currently installed Socket.IO 4.8.3 is the latest published Socket.IO release; the
+  available audit changes require a broad lockfile rewrite or an owner-package major
+  migration, neither of which was validated in this focused upgrade.
+- Mobile: remaining high findings are in the Expo SDK 55 CLI/Metro toolchain. They are
+  build-time tooling, not imported by the shipped application bundle. npm proposes an
+  incompatible React Native 0.72 / Expo 53 downgrade for several of them; it was not
+  applied. `shell-quote`, the only critical finding, is patched and no longer reported.
+
+**Decision: still blocked for a strict zero-reachable-high release gate.** There are no
+critical advisories remaining, but the API Socket.IO/Engine.IO and `ws` chains are
+runtime-reachable and must be resolved through a tested upstream Socket.IO release (or a
+fully tested transport migration) before claiming a clean production release. The
+tooling-only Expo residuals do not by themselves block the shipped mobile runtime.
