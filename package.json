@@ -15,6 +15,7 @@
     "test": "npm run test -w @chat-app/api",
     "mobile:typecheck": "npm run typecheck -w @chat-app/mobile",
     "mobile:lint": "npm run lint -w @chat-app/mobile",
+    "ci:secrets": "node scripts/check-tracked-secrets.mjs",
     "format": "prettier --write .",
     "seed": "npm run seed -w @chat-app/api",
     "prepare": "husky install"
