@@ -33,10 +33,18 @@
     "husky": "^9.1.7",
     "lint-staged": "^15.4.3",
     "prettier": "^3.5.3",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-native-safe-area-context": "5.6.2",
+    "react-native-screens": "4.23.0",
     "typescript": "^5.8.2"
   },
   "overrides": {
-    "shell-quote": "1.10.0"
+    "shell-quote": "1.10.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-native-safe-area-context": "5.6.2",
+    "react-native-screens": "4.23.0"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,json,md}": [
