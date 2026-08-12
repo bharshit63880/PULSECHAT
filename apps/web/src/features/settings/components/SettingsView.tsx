@@ -1,6 +1,16 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
-import { ArrowLeft, AtSign, Camera, ChevronRight, Mail, ShieldCheck, Smartphone, UserRound } from 'lucide-react';
+import {
+  ArrowLeft,
+  AtSign,
+  Camera,
+  ChevronRight,
+  Mail,
+  ShieldCheck,
+  Smartphone,
+  UserRound,
+} from 'lucide-react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -28,9 +38,23 @@ export const SettingsView = () => {
       username: user?.username ?? '',
       email: user?.email ?? '',
       bio: user?.bio ?? undefined,
-      avatarUrl: user?.avatarUrl ?? undefined
-    }
+      avatarUrl: user?.avatarUrl ?? undefined,
+    },
   });
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    form.reset({
+      name: user.name,
+      username: user.username,
+      email: user.email,
+      bio: user.bio ?? undefined,
+      avatarUrl: user.avatarUrl ?? undefined,
+    });
+  }, [form, user]);
 
   const updateMutation = useMutation({
     mutationFn: settingsApi.updateProfile,
@@ -38,7 +62,7 @@ export const SettingsView = () => {
       updateUser(result);
       toast.success('Profile updated');
     },
-    onError: () => toast.error('Unable to save profile')
+    onError: () => toast.error('Unable to save profile'),
   });
 
   if (!user) {
@@ -58,7 +82,9 @@ export const SettingsView = () => {
             <div>
               <p className="text-xs font-semibold text-accent">SETTINGS</p>
               <h1 className="mt-1 text-3xl font-semibold tracking-[-0.04em]">My profile</h1>
-              <p className="mt-2 text-sm leading-6 text-muted">Update the details people see in chats.</p>
+              <p className="mt-2 text-sm leading-6 text-muted">
+                Update the details people see in chats.
+              </p>
             </div>
           </div>
           <div className="rounded-[26px] surface-muted px-4 py-3 text-sm text-muted">
@@ -136,13 +162,19 @@ export const SettingsView = () => {
               <FormField label="Bio" error={form.formState.errors.bio?.message}>
                 <Input {...form.register('bio')} />
               </FormField>
-              <p className="-mt-3 text-xs text-muted">Add a short line people will see when they open your profile.</p>
+              <p className="-mt-3 text-xs text-muted">
+                Add a short line people will see when they open your profile.
+              </p>
               <div className="flex flex-col gap-3 border-t border-line/80 pt-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-2 text-sm text-muted">
                   <UserRound className="h-4 w-4" />
                   Profile updates apply instantly to this session.
                 </div>
-                <Button type="submit" disabled={updateMutation.isPending} className="min-h-12 rounded-2xl sm:min-w-[180px]">
+                <Button
+                  type="submit"
+                  disabled={updateMutation.isPending}
+                  className="min-h-12 rounded-2xl sm:min-w-[180px]"
+                >
                   {updateMutation.isPending ? 'Saving...' : 'Save changes'}
                 </Button>
               </div>
@@ -151,11 +183,51 @@ export const SettingsView = () => {
         </div>
 
         <section className="mt-6">
-          <div className="mb-3 flex items-end justify-between gap-4"><div><h2 className="text-lg font-semibold">Account centre</h2><p className="mt-1 text-sm text-muted">Useful profile and security details in one place.</p></div><span className="text-xs text-muted">Profile {form.watch('bio') ? 'complete' : 'almost complete'}</span></div>
+          <div className="mb-3 flex items-end justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-semibold">Account centre</h2>
+              <p className="mt-1 text-sm text-muted">
+                Useful profile and security details in one place.
+              </p>
+            </div>
+            <span className="text-xs text-muted">
+              Profile {form.watch('bio') ? 'complete' : 'almost complete'}
+            </span>
+          </div>
           <div className="grid gap-3 md:grid-cols-3">
-            <div className="rounded-2xl border border-line bg-card p-4"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent"><AtSign className="h-4 w-4" /></div><p className="mt-4 text-sm font-semibold">Your identity</p><p className="mt-1 text-xs leading-5 text-muted">@{form.watch('username')} · {form.watch('bio') || 'Add an about line'}</p></div>
-            <div className="rounded-2xl border border-line bg-card p-4"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent"><Mail className="h-4 w-4" /></div><p className="mt-4 text-sm font-semibold">Email status</p><p className="mt-1 text-xs leading-5 text-muted">{user.isEmailVerified ? 'Verified email address' : 'Verification is pending'}</p></div>
-            <Link to="/devices" className="group rounded-2xl border border-line bg-card p-4 transition hover:border-accent/40 hover:shadow-soft"><div className="flex items-center justify-between"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent"><Smartphone className="h-4 w-4" /></div><ChevronRight className="h-4 w-4 text-muted transition group-hover:translate-x-0.5 group-hover:text-accent" /></div><p className="mt-4 text-sm font-semibold">Devices & security</p><p className="mt-1 text-xs leading-5 text-muted">Review active sessions and remove devices you do not recognise.</p></Link>
+            <div className="rounded-2xl border border-line bg-card p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
+                <AtSign className="h-4 w-4" />
+              </div>
+              <p className="mt-4 text-sm font-semibold">Your identity</p>
+              <p className="mt-1 text-xs leading-5 text-muted">
+                @{form.watch('username')} · {form.watch('bio') || 'Add an about line'}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-line bg-card p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
+                <Mail className="h-4 w-4" />
+              </div>
+              <p className="mt-4 text-sm font-semibold">Email status</p>
+              <p className="mt-1 text-xs leading-5 text-muted">
+                {user.isEmailVerified ? 'Verified email address' : 'Verification is pending'}
+              </p>
+            </div>
+            <Link
+              to="/devices"
+              className="group rounded-2xl border border-line bg-card p-4 transition hover:border-accent/40 hover:shadow-soft"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
+                  <Smartphone className="h-4 w-4" />
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted transition group-hover:translate-x-0.5 group-hover:text-accent" />
+              </div>
+              <p className="mt-4 text-sm font-semibold">Devices & security</p>
+              <p className="mt-1 text-xs leading-5 text-muted">
+                Review active sessions and remove devices you do not recognise.
+              </p>
+            </Link>
           </div>
         </section>
       </div>
