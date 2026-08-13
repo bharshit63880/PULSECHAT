@@ -5,19 +5,26 @@ import { Skeleton } from '@/components/common/Skeleton';
 import { ProtectedRoute } from '@/routes/ProtectedRoute';
 import { PublicOnlyRoute } from '@/routes/PublicOnlyRoute';
 
-const ChatPage = lazy(() => import('@/pages/ChatPage').then((module) => ({ default: module.ChatPage })));
-const DevicesPage = lazy(() =>
-  import('@/pages/DevicesPage').then((module) => ({ default: module.DevicesPage }))
+const ChatPage = lazy(() =>
+  import('@/pages/ChatPage').then((module) => ({ default: module.ChatPage })),
 );
-const LoginPage = lazy(() => import('@/pages/LoginPage').then((module) => ({ default: module.LoginPage })));
+const DevicesPage = lazy(() =>
+  import('@/pages/DevicesPage').then((module) => ({ default: module.DevicesPage })),
+);
+const LoginPage = lazy(() =>
+  import('@/pages/LoginPage').then((module) => ({ default: module.LoginPage })),
+);
 const RegisterPage = lazy(() =>
-  import('@/pages/RegisterPage').then((module) => ({ default: module.RegisterPage }))
+  import('@/pages/RegisterPage').then((module) => ({ default: module.RegisterPage })),
 );
 const SettingsPage = lazy(() =>
-  import('@/pages/SettingsPage').then((module) => ({ default: module.SettingsPage }))
+  import('@/pages/SettingsPage').then((module) => ({ default: module.SettingsPage })),
+);
+const PeoplePage = lazy(() =>
+  import('@/pages/PeoplePage').then((module) => ({ default: module.PeoplePage })),
 );
 const VerifyEmailPage = lazy(() =>
-  import('@/pages/VerifyEmailPage').then((module) => ({ default: module.VerifyEmailPage }))
+  import('@/pages/VerifyEmailPage').then((module) => ({ default: module.VerifyEmailPage })),
 );
 
 const RouteLoader = () => (
@@ -60,6 +67,14 @@ export const AppRouter = () => (
         element={
           <ProtectedRoute>
             <SettingsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/people"
+        element={
+          <ProtectedRoute>
+            <PeoplePage />
           </ProtectedRoute>
         }
       />

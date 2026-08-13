@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 
 import { ChatHeader } from '@/components/chat/ChatHeader';
 import { ChatInfoPanel } from '@/components/chat/ChatInfoPanel';
+import { AppRail } from '@/components/chat/AppRail';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
 import { MessageComposer } from '@/components/chat/MessageComposer';
 import { MessageList } from '@/components/chat/MessageList';
@@ -582,10 +583,11 @@ export const ChatWorkspace = () => {
       <div
         className={`glass-panel grid h-full overflow-hidden rounded-3xl ${
           activeChat && isInfoPanelOpen
-            ? 'lg:grid-cols-[320px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)_340px]'
-            : 'lg:grid-cols-[320px_minmax(0,1fr)]'
+            ? 'lg:grid-cols-[76px_320px_minmax(0,1fr)] xl:grid-cols-[76px_320px_minmax(0,1fr)_340px]'
+            : 'lg:grid-cols-[76px_320px_minmax(0,1fr)]'
         }`}
       >
+        <AppRail currentUser={user} />
         <div className={`${showMobileChat ? 'hidden lg:block' : 'block'} min-h-0`}>
           <ChatSidebar
             currentUser={user}

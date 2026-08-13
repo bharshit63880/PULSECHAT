@@ -1,6 +1,14 @@
 import type { AttachmentDto, MessageDto } from '@chat-app/shared';
 
-import { CheckCheck, CheckIcon, Clock3, Download, LoaderCircle, RefreshCcw, SmilePlus } from 'lucide-react';
+import {
+  CheckCheck,
+  CheckIcon,
+  Clock3,
+  Download,
+  LoaderCircle,
+  RefreshCcw,
+  SmilePlus,
+} from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
 import { decryptAttachment, ensureLocalDevice } from '@/features/encryption/crypto';
@@ -24,7 +32,7 @@ const QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '🙏'];
 
 const AttachmentPreview = ({
   attachment,
-  peerPublicAgreementKey
+  peerPublicAgreementKey,
 }: {
   attachment: AttachmentDto;
   peerPublicAgreementKey?: string | null;
@@ -59,12 +67,25 @@ const AttachmentPreview = ({
   }, [attachment, peerPublicAgreementKey]);
 
   useEffect(() => {
-    if (!isImageLike || previewUrl || isDecrypting || !peerPublicAgreementKey || !attachment.encryption) {
+    if (
+      !isImageLike ||
+      previewUrl ||
+      isDecrypting ||
+      !peerPublicAgreementKey ||
+      !attachment.encryption
+    ) {
       return;
     }
 
     void handleDecrypt();
-  }, [attachment.encryption, handleDecrypt, isDecrypting, isImageLike, peerPublicAgreementKey, previewUrl]);
+  }, [
+    attachment.encryption,
+    handleDecrypt,
+    isDecrypting,
+    isImageLike,
+    peerPublicAgreementKey,
+    previewUrl,
+  ]);
 
   if (isImageLike && previewUrl) {
     const isSticker = attachment.fileName.endsWith('.svg');
@@ -77,7 +98,7 @@ const AttachmentPreview = ({
           'mb-2 object-cover',
           isSticker
             ? 'h-44 w-44 object-contain drop-shadow-[0_18px_30px_rgba(15,23,42,0.14)]'
-            : 'max-h-80 w-full rounded-[24px]'
+            : 'max-h-80 w-full rounded-[24px]',
         )}
       />
     );
@@ -93,7 +114,11 @@ const AttachmentPreview = ({
           className="inline-flex min-h-9 items-center gap-2 rounded-full border border-white/15 px-3 py-1 text-xs transition hover:bg-white/10 dark:border-line"
           disabled={isDecrypting}
         >
-          {isDecrypting ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+          {isDecrypting ? (
+            <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Download className="h-3.5 w-3.5" />
+          )}
           {attachment.mimeType.startsWith('image/') ? 'Decrypt preview' : 'Decrypt download'}
         </button>
         {previewUrl && !attachment.mimeType.startsWith('image/') ? (
@@ -114,7 +139,7 @@ export const MessageBubble = ({
   peerPublicAgreementKey,
   onReact,
   onRetry,
-  status = 'sent'
+  status = 'sent',
 }: MessageBubbleProps) => {
   const [isReactionTrayOpen, setIsReactionTrayOpen] = useState(false);
   const isStickerMessage = message.type === 'sticker' && Boolean(message.attachment?.url);
@@ -142,7 +167,9 @@ export const MessageBubble = ({
 
   return (
     <div className={cn('flex px-1 py-1.5', own ? 'justify-end' : 'justify-start')}>
-      <div className={cn('group relative max-w-[min(82%,38rem)]', own ? 'items-end' : 'items-start')}>
+      <div
+        className={cn('group relative max-w-[min(82%,38rem)]', own ? 'items-end' : 'items-start')}
+      >
         {onReact ? (
           <div
             className={cn(
@@ -150,7 +177,7 @@ export const MessageBubble = ({
               own ? 'right-0' : 'left-0',
               isReactionTrayOpen
                 ? 'translate-y-0 opacity-100'
-                : 'pointer-events-none translate-y-1 opacity-0 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100'
+                : 'pointer-events-none translate-y-1 opacity-0 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100',
             )}
           >
             {QUICK_REACTIONS.map((emoji) => (
@@ -173,8 +200,12 @@ export const MessageBubble = ({
           className={cn(
             'relative rounded-2xl px-3.5 py-2.5 shadow-[0_6px_18px_rgba(15,23,42,0.08)] transition-all duration-150',
             isStickerMessage && 'bg-transparent px-0 py-0 shadow-none',
-            !isStickerMessage && own && 'rounded-br-md bg-accent text-white',
-            !isStickerMessage && !own && 'rounded-bl-md border border-line bg-card text-ink dark:bg-slate-950/74'
+            !isStickerMessage &&
+              own &&
+              'rounded-br-md bg-gradient-to-br from-violet-500 via-accent to-fuchsia-600 text-white shadow-[0_12px_28px_rgba(102,59,231,0.26)]',
+            !isStickerMessage &&
+              !own &&
+              'rounded-bl-md border border-line bg-card text-ink dark:bg-white/[0.055]',
           )}
         >
           {showSenderName ? (
@@ -186,7 +217,9 @@ export const MessageBubble = ({
             <div
               className={cn(
                 'mb-3 rounded-[22px] border px-3 py-2.5 text-xs',
-                own ? 'border-white/15 bg-white/10' : 'border-line/80 bg-card-muted/80 dark:bg-slate-900/75'
+                own
+                  ? 'border-white/15 bg-white/10'
+                  : 'border-line/80 bg-card-muted/80 dark:bg-slate-900/75',
               )}
             >
               <p className="font-semibold">{message.replyTo.sender.name}</p>
@@ -194,17 +227,26 @@ export const MessageBubble = ({
             </div>
           ) : null}
 
-          {message.attachment?.url ? <AttachmentPreview attachment={message.attachment} peerPublicAgreementKey={peerPublicAgreementKey} /> : null}
+          {message.attachment?.url ? (
+            <AttachmentPreview
+              attachment={message.attachment}
+              peerPublicAgreementKey={peerPublicAgreementKey}
+            />
+          ) : null}
 
-          {shouldRenderPlaintext ? <p className="whitespace-pre-wrap text-sm leading-6">{plaintext}</p> : null}
+          {shouldRenderPlaintext ? (
+            <p className="whitespace-pre-wrap text-sm leading-6">{plaintext}</p>
+          ) : null}
 
           {message.reactions.length > 0 ? (
-            <div className={cn('absolute -bottom-4 flex flex-wrap gap-1', own ? 'right-2' : 'left-2')}>
+            <div
+              className={cn('absolute -bottom-4 flex flex-wrap gap-1', own ? 'right-2' : 'left-2')}
+            >
               {message.reactions.map((reaction) => (
                 <span
                   key={reaction.emoji}
                   className={cn(
-                    'inline-flex items-center rounded-full border border-line bg-card px-2 py-0.5 text-xs text-ink shadow-sm'
+                    'inline-flex items-center rounded-full border border-line bg-card px-2 py-0.5 text-xs text-ink shadow-sm',
                   )}
                 >
                   {reaction.emoji} {reaction.userIds.length}
@@ -223,14 +265,18 @@ export const MessageBubble = ({
             className={cn(
               'mt-2 flex items-center gap-1.5 text-[11px] font-medium',
               own ? 'justify-end text-white/78' : 'justify-end text-muted',
-              isStickerMessage && (own ? 'pr-2 text-emerald-50/90' : 'pr-2 text-muted')
+              isStickerMessage && (own ? 'pr-2 text-emerald-50/90' : 'pr-2 text-muted'),
             )}
           >
             {message.expiresAt ? <Clock3 className="h-3.5 w-3.5" /> : null}
             <span>{formatChatTimestamp(message.createdAt)}</span>
-            {own && status === 'sending' ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : null}
+            {own && status === 'sending' ? (
+              <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+            ) : null}
             {own && status === 'sent' ? <CheckIcon className="h-3.5 w-3.5" /> : null}
-            {own && status === 'delivered' ? <CheckCheck className="h-3.5 w-3.5 text-white/80" /> : null}
+            {own && status === 'delivered' ? (
+              <CheckCheck className="h-3.5 w-3.5 text-white/80" />
+            ) : null}
             {own && status === 'seen' ? <CheckCheck className="h-3.5 w-3.5 text-warm" /> : null}
             {own && status === 'failed' ? (
               <button
@@ -251,7 +297,7 @@ export const MessageBubble = ({
             onClick={() => setIsReactionTrayOpen((current) => !current)}
             className={cn(
               'absolute -bottom-2 grid h-7 w-7 place-items-center rounded-full border border-line bg-card text-muted shadow-sm transition hover:text-accent',
-              own ? '-left-9' : '-right-9'
+              own ? '-left-9' : '-right-9',
             )}
           >
             <SmilePlus className="h-3.5 w-3.5" />
