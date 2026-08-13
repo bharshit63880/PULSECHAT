@@ -37,7 +37,7 @@ export const AppRail = ({ currentUser }: { currentUser: AuthUser }) => {
   const location = useLocation();
 
   return (
-    <nav className="hidden h-full flex-col items-center border-r border-line/75 bg-bg-elevated/65 px-3 py-5 lg:flex">
+    <nav className="hidden h-full min-w-[76px] flex-col items-center overflow-hidden border-r border-line/75 bg-bg-elevated/65 px-3 py-5 lg:flex">
       <Link to="/" aria-label="PulseChat conversations" className="mb-9">
         <img
           src="/pulsechat-metal-mark.svg"

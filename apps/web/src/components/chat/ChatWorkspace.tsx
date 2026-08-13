@@ -583,12 +583,12 @@ export const ChatWorkspace = () => {
       <div
         className={`glass-panel grid h-full overflow-hidden rounded-3xl ${
           activeChat && isInfoPanelOpen
-            ? 'lg:grid-cols-[76px_320px_minmax(0,1fr)] xl:grid-cols-[76px_320px_minmax(0,1fr)_340px]'
+            ? 'lg:grid-cols-[76px_320px_minmax(0,1fr)] 2xl:grid-cols-[76px_320px_minmax(0,1fr)_340px]'
             : 'lg:grid-cols-[76px_320px_minmax(0,1fr)]'
         }`}
       >
         <AppRail currentUser={user} />
-        <div className={`${showMobileChat ? 'hidden lg:block' : 'block'} min-h-0`}>
+        <div className={`${showMobileChat ? 'hidden lg:block' : 'block'} min-h-0 min-w-0`}>
           <ChatSidebar
             currentUser={user}
             chats={chatsQuery.data ?? []}
@@ -621,7 +621,7 @@ export const ChatWorkspace = () => {
         </div>
 
         <div
-          className={`${showMobileChat ? 'flex' : 'hidden lg:flex'} min-h-0 flex-col overflow-hidden bg-card`}
+          className={`${showMobileChat ? 'flex' : 'hidden lg:flex'} min-h-0 min-w-0 flex-col overflow-hidden bg-card`}
         >
           {activeChat ? (
             <>
