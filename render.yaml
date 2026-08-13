@@ -3,7 +3,9 @@ services:
     name: pulsechat-api
     runtime: node
     plan: free
-    buildCommand: npm ci && npm run build -w @chat-app/shared && npm run build -w @chat-app/api
+    # NODE_ENV=production is required at runtime, but TypeScript builds need the
+    # declaration and test packages from devDependencies.
+    buildCommand: npm ci --include=dev && npm run build -w @chat-app/shared && npm run build -w @chat-app/api
     startCommand: npm run start -w @chat-app/api
     healthCheckPath: /api/v1/health
     envVars:
