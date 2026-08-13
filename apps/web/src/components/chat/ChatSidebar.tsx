@@ -98,7 +98,7 @@ export const ChatSidebar = ({
           <div className="mb-4 flex items-start justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <img
-                src="/pulsechat-mark.svg"
+                src="/pulsechat-metal-mark.svg"
                 alt="PulseChat"
                 className="h-11 w-11 shrink-0 rounded-2xl shadow-[0_12px_30px_rgba(112,67,246,0.25)]"
               />

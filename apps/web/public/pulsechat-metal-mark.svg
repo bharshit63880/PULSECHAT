@@ -1,0 +1,34 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="body" x1="30" y1="22" x2="218" y2="231" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E8DCFF"/>
+      <stop offset=".2" stop-color="#A878FF"/>
+      <stop offset=".56" stop-color="#6540E7"/>
+      <stop offset="1" stop-color="#251451"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="62" y1="55" x2="192" y2="204" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF9FF"/>
+      <stop offset=".22" stop-color="#FF7FBA"/>
+      <stop offset=".52" stop-color="#A747FF"/>
+      <stop offset=".8" stop-color="#5827CB"/>
+      <stop offset="1" stop-color="#E7D4FF"/>
+    </linearGradient>
+    <linearGradient id="pulse" x1="73" y1="167" x2="180" y2="167" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFB0D2"/>
+      <stop offset=".42" stop-color="#FF548F"/>
+      <stop offset="1" stop-color="#B990FF"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="10" stdDeviation="9" flood-color="#10052F" flood-opacity=".62"/>
+    </filter>
+  </defs>
+  <rect x="10" y="10" width="236" height="236" rx="68" fill="#0B0A22"/>
+  <rect x="13" y="13" width="230" height="230" rx="65" stroke="#F7EFFF" stroke-opacity=".16" stroke-width="6"/>
+  <path filter="url(#shadow)" d="M65 52C46.8 52 32 66.8 32 85v61c0 18.2 14.8 33 33 33h16v30c0 8.7 10.5 13 16.6 6.8l37.1-37.2H157c37 0 67-30 67-67 0-32.9-26.6-59.5-59.5-59.5H65Z" fill="url(#body)"/>
+  <path d="M70 65h92c26.5 0 48 21.5 48 48s-21.5 48-48 48h-34l-31 31v-31H70c-13.3 0-24-10.7-24-24V89c0-13.3 10.7-24 24-24Z" fill="#0D0C2B" stroke="url(#metal)" stroke-width="10" stroke-linejoin="round"/>
+  <circle cx="92" cy="112" r="9" fill="url(#metal)"/>
+  <circle cx="128" cy="112" r="9" fill="url(#metal)"/>
+  <circle cx="164" cy="112" r="9" fill="url(#metal)"/>
+  <path d="M72 164h21l11-23 18 46 20-39 11 16h30" stroke="url(#pulse)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M61 82c20-24 57-31 83-13" stroke="white" stroke-opacity=".34" stroke-width="8" stroke-linecap="round"/>
+</svg>

@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
+import axios from 'axios';
 import {
   ArrowLeft,
   AtSign,
@@ -10,12 +11,13 @@ import {
   Smartphone,
   UserRound,
 } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import type { z } from 'zod';
 
+import type { ApiErrorResponse } from '@chat-app/shared';
 import { updateProfileSchema } from '@chat-app/shared';
 
 import { Avatar } from '@/components/common/Avatar';
@@ -31,6 +33,7 @@ type SettingsFormValues = z.infer<typeof updateProfileSchema>;
 export const SettingsView = () => {
   const user = useAuthStore((state) => state.user);
   const updateUser = useAuthStore((state) => state.updateUser);
+  const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
@@ -62,7 +65,32 @@ export const SettingsView = () => {
       updateUser(result);
       toast.success('Profile updated');
     },
-    onError: () => toast.error('Unable to save profile'),
+    onError: (error) => {
+      toast.error(
+        axios.isAxiosError<ApiErrorResponse>(error)
+          ? (error.response?.data?.error?.message ?? 'Unable to save profile')
+          : 'Unable to save profile',
+      );
+    },
+  });
+
+  const avatarMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const uploaded = await uploadService.uploadAvatar(file);
+      return settingsApi.updateProfile({ avatarUrl: uploaded.url });
+    },
+    onSuccess: (result) => {
+      updateUser(result);
+      form.setValue('avatarUrl', result.avatarUrl ?? undefined, { shouldDirty: false });
+      toast.success('Profile photo updated');
+    },
+    onError: (error) => {
+      toast.error(
+        axios.isAxiosError<ApiErrorResponse>(error)
+          ? (error.response?.data?.error?.message ?? 'Unable to upload profile photo')
+          : 'Unable to upload profile photo',
+      );
+    },
   });
 
   if (!user) {
@@ -103,29 +131,40 @@ export const SettingsView = () => {
                 </div>
               </div>
 
+              <input
+                ref={avatarInputRef}
+                className="sr-only"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(event) => {
+                  const file = event.currentTarget.files?.[0];
+                  event.currentTarget.value = '';
+
+                  if (!file) {
+                    return;
+                  }
+
+                  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+                    toast.error('Choose a JPG, PNG, or WebP image');
+                    return;
+                  }
+
+                  avatarMutation.mutate(file);
+                }}
+              />
               <Button
+                type="button"
                 variant="secondary"
                 className="min-h-11 rounded-2xl"
-                onClick={async () => {
-                  const picker = document.createElement('input');
-                  picker.type = 'file';
-                  picker.accept = 'image/*';
-                  picker.onchange = async () => {
-                    const file = picker.files?.[0];
-                    if (!file) {
-                      return;
-                    }
-
-                    const uploaded = await uploadService.uploadAvatar(file);
-                    form.setValue('avatarUrl', uploaded.url);
-                    toast.success('Avatar uploaded');
-                  };
-                  picker.click();
-                }}
+                disabled={avatarMutation.isPending}
+                onClick={() => avatarInputRef.current?.click()}
               >
                 <Camera className="h-4 w-4" />
-                Upload avatar
+                {avatarMutation.isPending ? 'Uploading photo...' : 'Upload profile photo'}
               </Button>
+              <p className="-mt-2 text-xs leading-5 text-muted">
+                JPG, PNG, or WebP. Your photo is saved as soon as the upload completes.
+              </p>
 
               <div className="w-full space-y-3 rounded-[28px] surface-muted p-4">
                 <div className="flex items-start gap-3">
