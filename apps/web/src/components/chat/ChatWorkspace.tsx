@@ -32,8 +32,8 @@ import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useDeviceBootstrap } from '@/hooks/use-device-bootstrap';
 import { useSocketBridge } from '@/hooks/use-socket-bridge';
 import { useCalls } from '@/features/calls/CallProvider';
-import { disconnectSocket, ensureSocketConnected, getSocket } from '@/lib/socket';
-import { SOCKET_EVENTS } from '@/lib/socket-events';
+import { deliverOutboxItem } from '@/lib/outbox-delivery';
+import { disconnectSocket, getSocket } from '@/lib/socket';
 import { uploadService } from '@/services/upload.service';
 import { useAuthStore } from '@/store/auth-store';
 import { useCryptoStore } from '@/store/crypto-store';
@@ -317,59 +317,35 @@ export const ChatWorkspace = () => {
     sendingRef.current.add(queueItem.clientMessageId);
 
     try {
-      await ensureSocketConnected(socket);
-
-      const ack = await new Promise<{ ok: boolean; message?: MessageDto }>((resolve) => {
-        const timeout = window.setTimeout(() => resolve({ ok: false }), 6000);
-        socket.emit(
-          SOCKET_EVENTS.SEND_MESSAGE,
-          {
-            chatId: queueItem.chatId,
-            clientMessageId: queueItem.clientMessageId,
-            senderDeviceId: queueItem.senderDeviceId,
-            recipientDeviceId: queueItem.recipientDeviceId,
-            type: queueItem.type,
-            ciphertext: queueItem.ciphertext,
-            encryptionVersion: queueItem.encryptionVersion,
-            iv: queueItem.iv,
-            digest: queueItem.digest,
-            attachment: queueItem.attachment,
-          },
-          (payload: { ok: boolean; message?: MessageDto }) => {
-            window.clearTimeout(timeout);
-            resolve(payload);
-          },
-        );
-      });
-
-      if (!ack.ok || !ack.message) {
-        markOutboxStatus(queueItem.clientMessageId, 'failed');
-        return;
-      }
+      const acknowledgedMessage = await deliverOutboxItem(queueItem, socket);
 
       await secureStore.saveDecryptedMessage({
-        messageId: ack.message.id,
+        messageId: acknowledgedMessage.id,
         userId: user!.id,
-        chatId: ack.message.chatId,
+        chatId: acknowledgedMessage.chatId,
         text: queueItem.previewText,
-        attachmentName: ack.message.attachment?.fileName ?? null,
-        createdAt: ack.message.createdAt,
+        attachmentName: acknowledgedMessage.attachment?.fileName ?? null,
+        createdAt: acknowledgedMessage.createdAt,
       });
 
-      updateMessageCache(queryClient, ack.message.chatId, (current) => ({
+      updateMessageCache(queryClient, acknowledgedMessage.chatId, (current) => ({
         data: current?.data.map((message) =>
           message.id === queueItem.clientMessageId ||
           message.clientMessageId === queueItem.clientMessageId
-            ? ack.message!
+            ? acknowledgedMessage
             : message,
-        ) ?? [ack.message!],
+        ) ?? [acknowledgedMessage],
         meta: current?.meta ?? { page: 1, limit: 40, total: 1, totalPages: 1 },
       }));
 
       queryClient.setQueryData<ChatDto[]>(['chats'], (current) =>
         (current ?? []).map((chat) =>
-          chat.id === ack.message!.chatId
-            ? { ...chat, latestMessage: ack.message!, updatedAt: ack.message!.createdAt }
+          chat.id === acknowledgedMessage.chatId
+            ? {
+                ...chat,
+                latestMessage: acknowledgedMessage,
+                updatedAt: acknowledgedMessage.createdAt,
+              }
             : chat,
         ),
       );
