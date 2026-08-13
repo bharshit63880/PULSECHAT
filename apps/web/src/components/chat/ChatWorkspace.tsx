@@ -19,7 +19,7 @@ import {
   computeSafetyNumber,
   encryptAttachmentFile,
   encryptPlaintext,
-  ensureLocalDevice
+  ensureLocalDevice,
 } from '@/features/encryption/crypto';
 import { secureStore } from '@/features/encryption/secure-store';
 import { chatsApi } from '@/features/chats/api';
@@ -32,7 +32,7 @@ import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useDeviceBootstrap } from '@/hooks/use-device-bootstrap';
 import { useSocketBridge } from '@/hooks/use-socket-bridge';
 import { useCalls } from '@/features/calls/CallProvider';
-import { disconnectSocket, getSocket } from '@/lib/socket';
+import { disconnectSocket, ensureSocketConnected, getSocket } from '@/lib/socket';
 import { SOCKET_EVENTS } from '@/lib/socket-events';
 import { uploadService } from '@/services/upload.service';
 import { useAuthStore } from '@/store/auth-store';
@@ -59,7 +59,7 @@ const createOptimisticMessage = (
     digest: string;
     attachment?: MessageDto['attachment'];
     type: 'text' | 'image' | 'file' | 'gif' | 'sticker';
-  }
+  },
 ): MessageDto => ({
   id: payload.clientMessageId,
   clientMessageId: payload.clientMessageId,
@@ -80,19 +80,19 @@ const createOptimisticMessage = (
   expiresAt: null,
   edited: false,
   createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
+  updatedAt: new Date().toISOString(),
 });
 
 const updateMessageCache = (
   queryClient: ReturnType<typeof useQueryClient>,
   chatId: string,
-  updater: (current: MessagesQueryData | undefined) => MessagesQueryData
+  updater: (current: MessagesQueryData | undefined) => MessagesQueryData,
 ) => {
   queryClient.setQueryData<InfiniteData<MessagesQueryData>>(['messages', chatId], (current) => {
     if (!current) {
       return {
         pages: [updater(undefined)],
-        pageParams: [1]
+        pageParams: [1],
       };
     }
 
@@ -100,7 +100,7 @@ const updateMessageCache = (
 
     return {
       ...current,
-      pages: [updater(firstPage), ...remainingPages]
+      pages: [updater(firstPage), ...remainingPages],
     };
   });
 };
@@ -138,24 +138,24 @@ export const ChatWorkspace = () => {
   const chatsQuery = useQuery({
     queryKey: ['chats'],
     queryFn: chatsApi.list,
-    enabled: Boolean(user)
+    enabled: Boolean(user),
   });
 
   const usersQuery = useQuery({
     queryKey: ['users', debouncedSearch],
     queryFn: () => usersApi.list(debouncedSearch),
-    enabled: Boolean(user) && debouncedSearch.length > 0
+    enabled: Boolean(user) && debouncedSearch.length > 0,
   });
 
   const directoryUsersQuery = useQuery({
     queryKey: ['users', 'directory'],
     queryFn: () => usersApi.list(),
-    enabled: Boolean(user)
+    enabled: Boolean(user),
   });
 
   const activeChat = useMemo(
     () => chatsQuery.data?.find((chat) => chat.id === activeChatId) ?? null,
-    [activeChatId, chatsQuery.data]
+    [activeChatId, chatsQuery.data],
   );
 
   const messagesQuery = useInfiniteQuery({
@@ -164,18 +164,18 @@ export const ChatWorkspace = () => {
     enabled: Boolean(activeChatId),
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
-      lastPage.meta.page < lastPage.meta.totalPages ? lastPage.meta.page + 1 : undefined
+      lastPage.meta.page < lastPage.meta.totalPages ? lastPage.meta.page + 1 : undefined,
   });
 
   const { typingUserIds } = useSocketBridge(activeChat);
   const pagedMessages = useMemo(
     () => [...(messagesQuery.data?.pages ?? [])].reverse().flatMap((page) => page.data),
-    [messagesQuery.data?.pages]
+    [messagesQuery.data?.pages],
   );
   const { secureMessages, peerBundle, primaryPeerDevice } = useSecureMessages(
     activeChat,
     pagedMessages,
-    user?.id
+    user?.id,
   );
 
   useEffect(() => {
@@ -191,7 +191,9 @@ export const ChatWorkspace = () => {
 
     void messagesApi.markSeen(activeChat.id);
     queryClient.setQueryData<ChatDto[]>(['chats'], (current) =>
-      (current ?? []).map((chat) => (chat.id === activeChat.id ? { ...chat, unreadCount: 0 } : chat))
+      (current ?? []).map((chat) =>
+        chat.id === activeChat.id ? { ...chat, unreadCount: 0 } : chat,
+      ),
     );
   }, [activeChat, pagedMessages.length, queryClient]);
 
@@ -206,7 +208,7 @@ export const ChatWorkspace = () => {
       setShowMobileChat(true);
       setSearch('');
     },
-    onError: () => toast.error('Unable to open secure direct chat')
+    onError: () => toast.error('Unable to open secure direct chat'),
   });
 
   const createGroupMutation = useMutation({
@@ -226,7 +228,7 @@ export const ChatWorkspace = () => {
       const message =
         error instanceof Error ? error.message : 'Unable to create group chat right now';
       toast.error(message);
-    }
+    },
   });
 
   const logoutMutation = useMutation({
@@ -234,7 +236,7 @@ export const ChatWorkspace = () => {
     onSettled: () => {
       disconnectSocket();
       clearSession();
-    }
+    },
   });
 
   const disappearingMutation = useMutation({
@@ -242,53 +244,56 @@ export const ChatWorkspace = () => {
       chatsApi.updateDisappearingMode(chatId, seconds),
     onSuccess: (chat) => {
       queryClient.setQueryData<ChatDto[]>(['chats'], (current) =>
-        (current ?? []).map((item) => (item.id === chat.id ? chat : item))
+        (current ?? []).map((item) => (item.id === chat.id ? chat : item)),
       );
       toast.success('Disappearing timer updated');
     },
-    onError: () => toast.error('Unable to update disappearing timer')
+    onError: () => toast.error('Unable to update disappearing timer'),
   });
 
   const renameGroupMutation = useMutation({
-    mutationFn: ({ chatId, name }: { chatId: string; name: string }) => groupsApi.rename(chatId, name),
+    mutationFn: ({ chatId, name }: { chatId: string; name: string }) =>
+      groupsApi.rename(chatId, name),
     onSuccess: (chat) => {
       queryClient.setQueryData<ChatDto[]>(['chats'], (current) =>
-        (current ?? []).map((item) => (item.id === chat.id ? chat : item))
+        (current ?? []).map((item) => (item.id === chat.id ? chat : item)),
       );
       toast.success('Group updated');
     },
     onError: (error) => {
       const message = error instanceof Error ? error.message : 'Unable to rename group right now';
       toast.error(message);
-    }
+    },
   });
 
   const addGroupMemberMutation = useMutation({
-    mutationFn: ({ chatId, userId }: { chatId: string; userId: string }) => groupsApi.addMember(chatId, userId),
+    mutationFn: ({ chatId, userId }: { chatId: string; userId: string }) =>
+      groupsApi.addMember(chatId, userId),
     onSuccess: (chat) => {
       queryClient.setQueryData<ChatDto[]>(['chats'], (current) =>
-        (current ?? []).map((item) => (item.id === chat.id ? chat : item))
+        (current ?? []).map((item) => (item.id === chat.id ? chat : item)),
       );
       toast.success('Member added');
     },
     onError: (error) => {
       const message = error instanceof Error ? error.message : 'Unable to add member right now';
       toast.error(message);
-    }
+    },
   });
 
   const removeGroupMemberMutation = useMutation({
-    mutationFn: ({ chatId, userId }: { chatId: string; userId: string }) => groupsApi.removeMember(chatId, userId),
+    mutationFn: ({ chatId, userId }: { chatId: string; userId: string }) =>
+      groupsApi.removeMember(chatId, userId),
     onSuccess: (chat) => {
       queryClient.setQueryData<ChatDto[]>(['chats'], (current) =>
-        (current ?? []).map((item) => (item.id === chat.id ? chat : item))
+        (current ?? []).map((item) => (item.id === chat.id ? chat : item)),
       );
       toast.success('Member removed');
     },
     onError: (error) => {
       const message = error instanceof Error ? error.message : 'Unable to remove member right now';
       toast.error(message);
-    }
+    },
   });
 
   const reactMutation = useMutation({
@@ -297,9 +302,9 @@ export const ChatWorkspace = () => {
     onSuccess: (message) => {
       updateMessageCache(queryClient, message.chatId, (current) => ({
         data: (current?.data ?? []).map((item) => (item.id === message.id ? message : item)),
-        meta: current?.meta ?? { page: 1, limit: 40, total: 0, totalPages: 1 }
+        meta: current?.meta ?? { page: 1, limit: 40, total: 0, totalPages: 1 },
       }));
-    }
+    },
   });
 
   const sendQueuedMessage = useEffectEvent(async (queueItem: (typeof outbox)[number]) => {
@@ -309,14 +314,11 @@ export const ChatWorkspace = () => {
 
     const socket = getSocket(token);
 
-    if (!socket.connected) {
-      socket.connect();
-      return;
-    }
-
     sendingRef.current.add(queueItem.clientMessageId);
 
     try {
+      await ensureSocketConnected(socket);
+
       const ack = await new Promise<{ ok: boolean; message?: MessageDto }>((resolve) => {
         const timeout = window.setTimeout(() => resolve({ ok: false }), 6000);
         socket.emit(
@@ -331,12 +333,12 @@ export const ChatWorkspace = () => {
             encryptionVersion: queueItem.encryptionVersion,
             iv: queueItem.iv,
             digest: queueItem.digest,
-            attachment: queueItem.attachment
+            attachment: queueItem.attachment,
           },
           (payload: { ok: boolean; message?: MessageDto }) => {
             window.clearTimeout(timeout);
             resolve(payload);
-          }
+          },
         );
       });
 
@@ -351,25 +353,32 @@ export const ChatWorkspace = () => {
         chatId: ack.message.chatId,
         text: queueItem.previewText,
         attachmentName: ack.message.attachment?.fileName ?? null,
-        createdAt: ack.message.createdAt
+        createdAt: ack.message.createdAt,
       });
 
       updateMessageCache(queryClient, ack.message.chatId, (current) => ({
-        data:
-          current?.data.map((message) =>
-            message.id === queueItem.clientMessageId || message.clientMessageId === queueItem.clientMessageId
-              ? ack.message!
-              : message
-          ) ?? [ack.message!],
-        meta: current?.meta ?? { page: 1, limit: 40, total: 1, totalPages: 1 }
+        data: current?.data.map((message) =>
+          message.id === queueItem.clientMessageId ||
+          message.clientMessageId === queueItem.clientMessageId
+            ? ack.message!
+            : message,
+        ) ?? [ack.message!],
+        meta: current?.meta ?? { page: 1, limit: 40, total: 1, totalPages: 1 },
       }));
 
       queryClient.setQueryData<ChatDto[]>(['chats'], (current) =>
         (current ?? []).map((chat) =>
-          chat.id === ack.message!.chatId ? { ...chat, latestMessage: ack.message!, updatedAt: ack.message!.createdAt } : chat
-        )
+          chat.id === ack.message!.chatId
+            ? { ...chat, latestMessage: ack.message!, updatedAt: ack.message!.createdAt }
+            : chat,
+        ),
       );
       removeOutboxItem(queueItem.clientMessageId);
+    } catch (error) {
+      markOutboxStatus(queueItem.clientMessageId, 'failed');
+      toast.error(
+        error instanceof Error ? error.message : 'Unable to send the encrypted attachment',
+      );
     } finally {
       sendingRef.current.delete(queueItem.clientMessageId);
     }
@@ -395,9 +404,9 @@ export const ChatWorkspace = () => {
       Object.fromEntries(
         outbox
           .filter((item) => item.chatId === activeChat?.id)
-          .map((item) => [item.clientMessageId, item.status === 'pending' ? 'sending' : 'failed'])
+          .map((item) => [item.clientMessageId, item.status === 'pending' ? 'sending' : 'failed']),
       ) as Record<string, 'sending' | 'failed'>,
-    [activeChat?.id, outbox]
+    [activeChat?.id, outbox],
   );
 
   if (!token) {
@@ -463,7 +472,9 @@ export const ChatWorkspace = () => {
 
     const localDevice = activeChat.isGroupChat ? null : await ensureLocalDevice();
     const clientMessageId =
-      typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `client-${Date.now()}`;
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `client-${Date.now()}`;
     const previewText =
       payload.text?.trim() ||
       (payload.type === 'sticker'
@@ -476,14 +487,16 @@ export const ChatWorkspace = () => {
               ? `Encrypted file attachment: ${payload.file.name}`
               : 'Encrypted message');
     const groupIv =
-      typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `group-iv-${Date.now()}`;
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `group-iv-${Date.now()}`;
     const groupDigest = `group-digest-${clientMessageId}`;
     const encryptedText = activeChat.isGroupChat
       ? {
           ciphertext: previewText,
           encryptionVersion: 'server-group-v1',
           iv: groupIv,
-          digest: groupDigest
+          digest: groupDigest,
         }
       : await encryptPlaintext(previewText, localDevice!, primaryPeerDevice!.publicAgreementKey);
 
@@ -493,10 +506,10 @@ export const ChatWorkspace = () => {
       const { encryptedBlob, metadata } = await encryptAttachmentFile(
         payload.file,
         localDevice,
-        primaryPeerDevice.publicAgreementKey
+        primaryPeerDevice.publicAgreementKey,
       );
       const uploaded = await uploadService.uploadAttachment(
-        new File([encryptedBlob], `${payload.file.name}.enc`, { type: 'application/octet-stream' })
+        new File([encryptedBlob], `${payload.file.name}.enc`, { type: 'application/octet-stream' }),
       );
 
       attachment = {
@@ -506,20 +519,22 @@ export const ChatWorkspace = () => {
         mimeType: payload.file.type || 'application/octet-stream',
         size: payload.file.size,
         isEncrypted: true,
-        encryption: metadata.encryption
+        encryption: metadata.encryption,
       };
     }
 
     const optimistic = createOptimisticMessage(user, activeChat.id, {
       clientMessageId,
       senderDeviceId: currentDevice.deviceId,
-      recipientDeviceId: activeChat.isGroupChat ? currentDevice.deviceId : primaryPeerDevice!.deviceId,
+      recipientDeviceId: activeChat.isGroupChat
+        ? currentDevice.deviceId
+        : primaryPeerDevice!.deviceId,
       ciphertext: encryptedText.ciphertext,
       encryptionVersion: encryptedText.encryptionVersion,
       iv: encryptedText.iv,
       digest: encryptedText.digest,
       attachment,
-      type: payload.type
+      type: payload.type,
     });
 
     await secureStore.saveDecryptedMessage({
@@ -528,25 +543,29 @@ export const ChatWorkspace = () => {
       chatId: activeChat.id,
       text: previewText,
       attachmentName: attachment?.fileName ?? null,
-      createdAt: optimistic.createdAt
+      createdAt: optimistic.createdAt,
     });
 
     updateMessageCache(queryClient, activeChat.id, (current) => ({
       data: [...(current?.data ?? []), optimistic],
-      meta: current?.meta ?? { page: 1, limit: 40, total: 1, totalPages: 1 }
+      meta: current?.meta ?? { page: 1, limit: 40, total: 1, totalPages: 1 },
     }));
 
     queryClient.setQueryData<ChatDto[]>(['chats'], (current) =>
       (current ?? []).map((chat) =>
-        chat.id === activeChat.id ? { ...chat, latestMessage: optimistic, updatedAt: optimistic.createdAt } : chat
-      )
+        chat.id === activeChat.id
+          ? { ...chat, latestMessage: optimistic, updatedAt: optimistic.createdAt }
+          : chat,
+      ),
     );
 
     enqueue({
       clientMessageId,
       chatId: activeChat.id,
       senderDeviceId: currentDevice.deviceId,
-      recipientDeviceId: activeChat.isGroupChat ? currentDevice.deviceId : primaryPeerDevice!.deviceId,
+      recipientDeviceId: activeChat.isGroupChat
+        ? currentDevice.deviceId
+        : primaryPeerDevice!.deviceId,
       type: payload.type,
       ciphertext: encryptedText.ciphertext,
       encryptionVersion: encryptedText.encryptionVersion,
@@ -555,7 +574,7 @@ export const ChatWorkspace = () => {
       attachment,
       previewText,
       createdAt: optimistic.createdAt,
-      status: 'pending'
+      status: 'pending',
     });
   };
 
@@ -568,13 +587,16 @@ export const ChatWorkspace = () => {
       return;
     }
 
-    const combinedFingerprint = await computeSafetyNumber(currentDevice.fingerprint, primaryPeerDevice.fingerprint);
+    const combinedFingerprint = await computeSafetyNumber(
+      currentDevice.fingerprint,
+      primaryPeerDevice.fingerprint,
+    );
     upsertVerification(activeChat.id, {
       peerDeviceId: primaryPeerDevice.deviceId,
       peerFingerprint: primaryPeerDevice.fingerprint,
       combinedFingerprint,
       status: 'verified',
-      verifiedAt: new Date().toISOString()
+      verifiedAt: new Date().toISOString(),
     });
     toast.success('Safety number marked as verified on this device');
   };
@@ -620,7 +642,9 @@ export const ChatWorkspace = () => {
           />
         </div>
 
-        <div className={`${showMobileChat ? 'flex' : 'hidden lg:flex'} min-h-0 flex-col overflow-hidden bg-card`}>
+        <div
+          className={`${showMobileChat ? 'flex' : 'hidden lg:flex'} min-h-0 flex-col overflow-hidden bg-card`}
+        >
           {activeChat ? (
             <>
               <ChatHeader
@@ -700,18 +724,26 @@ export const ChatWorkspace = () => {
             onAddGroupMember={
               activeChat.isGroupChat
                 ? async (memberUserId) => {
-                    await addGroupMemberMutation.mutateAsync({ chatId: activeChat.id, userId: memberUserId });
+                    await addGroupMemberMutation.mutateAsync({
+                      chatId: activeChat.id,
+                      userId: memberUserId,
+                    });
                   }
                 : undefined
             }
             onRemoveGroupMember={
               activeChat.isGroupChat
                 ? async (memberUserId) => {
-                    await removeGroupMemberMutation.mutateAsync({ chatId: activeChat.id, userId: memberUserId });
+                    await removeGroupMemberMutation.mutateAsync({
+                      chatId: activeChat.id,
+                      userId: memberUserId,
+                    });
                   }
                 : undefined
             }
-            isUpdatingGroupMembers={addGroupMemberMutation.isPending || removeGroupMemberMutation.isPending}
+            isUpdatingGroupMembers={
+              addGroupMemberMutation.isPending || removeGroupMemberMutation.isPending
+            }
             onClose={() => setInfoPanelOpen(false)}
           />
         ) : null}
