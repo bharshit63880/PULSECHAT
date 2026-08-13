@@ -6,16 +6,16 @@
 
 :root {
   color-scheme: light;
-  --color-bg: 245 247 249;
-  --color-bg-elevated: 250 251 252;
+  --color-bg: 247 246 255;
+  --color-bg-elevated: 255 255 255;
   --color-card: 255 255 255;
-  --color-card-muted: 241 245 249;
-  --color-line: 226 232 240;
-  --color-accent: 16 150 104;
-  --color-accent-soft: 220 252 231;
-  --color-ink: 17 24 39;
-  --color-muted: 100 116 139;
-  --color-warm: 245 158 11;
+  --color-card-muted: 245 243 255;
+  --color-line: 226 221 245;
+  --color-accent: 112 67 246;
+  --color-accent-soft: 238 232 255;
+  --color-ink: 31 25 54;
+  --color-muted: 104 94 137;
+  --color-warm: 255 104 142;
   --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.05);
   --shadow-float: 0 18px 48px rgba(15, 23, 42, 0.14);
   --safe-top: env(safe-area-inset-top, 0px);
@@ -26,18 +26,18 @@
 
 .dark {
   color-scheme: dark;
-  --color-bg: 8 15 24;
-  --color-bg-elevated: 12 20 31;
-  --color-card: 15 24 36;
-  --color-card-muted: 20 31 45;
-  --color-line: 39 52 70;
-  --color-accent: 52 211 153;
-  --color-accent-soft: 16 46 39;
-  --color-ink: 232 239 247;
-  --color-muted: 150 166 187;
-  --color-warm: 250 204 21;
-  --shadow-soft: 0 22px 70px rgba(2, 6, 23, 0.28);
-  --shadow-float: 0 36px 110px rgba(2, 6, 23, 0.42);
+  --color-bg: 6 8 28;
+  --color-bg-elevated: 10 14 39;
+  --color-card: 16 20 47;
+  --color-card-muted: 27 31 61;
+  --color-line: 53 57 91;
+  --color-accent: 128 82 255;
+  --color-accent-soft: 48 35 103;
+  --color-ink: 247 245 255;
+  --color-muted: 174 170 205;
+  --color-warm: 255 91 139;
+  --shadow-soft: 0 22px 70px rgba(0, 0, 20, 0.34);
+  --shadow-float: 0 36px 110px rgba(0, 0, 16, 0.56);
 }
 
 @layer base {
@@ -62,10 +62,10 @@
 
   .dark body {
     background-image:
-      radial-gradient(circle at top left, rgba(52, 211, 153, 0.14), transparent 28%),
-      radial-gradient(circle at right 12%, rgba(56, 189, 248, 0.1), transparent 24%),
-      radial-gradient(circle at bottom center, rgba(250, 204, 21, 0.05), transparent 30%),
-      linear-gradient(180deg, rgba(15, 23, 42, 0.28), rgba(2, 6, 23, 0.12));
+      radial-gradient(circle at 9% 5%, rgba(128, 82, 255, 0.2), transparent 26%),
+      radial-gradient(circle at 86% 18%, rgba(255, 91, 139, 0.1), transparent 24%),
+      radial-gradient(circle at 53% 96%, rgba(87, 57, 214, 0.12), transparent 32%),
+      linear-gradient(180deg, rgba(11, 13, 42, 0.92), rgba(5, 7, 24, 0.98));
   }
 
   * {
@@ -119,8 +119,8 @@
   }
 
   .dark .glass-panel {
-    background: linear-gradient(180deg, rgba(15, 24, 36, 0.9), rgba(9, 16, 26, 0.76));
-    border-color: rgba(255, 255, 255, 0.06);
+    background: linear-gradient(145deg, rgba(18, 22, 50, 0.96), rgba(8, 11, 34, 0.94));
+    border-color: rgba(181, 166, 255, 0.13);
   }
 
   .glass-card {
@@ -130,7 +130,7 @@
   }
 
   .dark .glass-card {
-    background: linear-gradient(180deg, rgba(15, 24, 36, 0.92), rgba(14, 21, 34, 0.84));
+    background: linear-gradient(180deg, rgba(25, 29, 60, 0.94), rgba(14, 18, 45, 0.9));
   }
 
   .surface-muted {
@@ -145,7 +145,9 @@
   }
 
   .dark .chat-canvas {
-    background-image: radial-gradient(rgba(148, 163, 184, 0.1) 1px, transparent 1px);
+    background-image:
+      radial-gradient(rgba(181, 166, 255, 0.12) 1px, transparent 1px),
+      radial-gradient(circle at 55% 0%, rgba(117, 70, 255, 0.12), transparent 44%);
   }
 
   .text-balance {
@@ -170,6 +172,11 @@
   }
 
   .dark .mobile-nav-blur {
-    background: linear-gradient(180deg, rgba(15, 24, 36, 0.92), rgba(9, 16, 26, 0.86));
+    background: linear-gradient(180deg, rgba(20, 24, 55, 0.98), rgba(10, 13, 38, 0.96));
+  }
+
+  .midnight-input {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(187, 177, 255, 0.18);
   }
 }
