@@ -1,7 +1,23 @@
-import type { AuthUser, ChatDto, MessageSearchResultDto, PublishedKeyBundleDto } from '@chat-app/shared';
+import type {
+  AuthUser,
+  ChatDto,
+  MessageSearchResultDto,
+  PublishedKeyBundleDto,
+} from '@chat-app/shared';
 import type { ReactNode } from 'react';
 
-import { Check, ChevronDown, Copy, PencilLine, Search, ShieldCheck, TimerReset, UserPlus, UserRound, X } from 'lucide-react';
+import {
+  Check,
+  ChevronDown,
+  Copy,
+  PencilLine,
+  Search,
+  ShieldCheck,
+  TimerReset,
+  UserPlus,
+  UserRound,
+  X,
+} from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -17,7 +33,7 @@ const InfoRow = ({
   value,
   mono = false,
   onCopy,
-  copied = false
+  copied = false,
 }: {
   label: string;
   value: string;
@@ -55,7 +71,7 @@ const SectionCard = ({
   subtitle,
   defaultOpen = true,
   children,
-  actions
+  actions,
 }: {
   icon: ReactNode;
   title: string;
@@ -67,9 +83,9 @@ const SectionCard = ({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <section className="glass-card rounded-[30px] p-5 transition-all duration-200 sm:p-6">
+    <section className="border-b border-line/80 py-4 last:border-b-0 transition-all duration-200">
       <div className="flex items-start gap-3">
-        <div className="mt-0.5 flex h-11 w-11 items-center justify-center rounded-2xl bg-accent-soft text-accent dark:text-emerald-200">
+        <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-accent-soft text-accent dark:text-emerald-200">
           {icon}
         </div>
         <div className="min-w-0 flex-1">
@@ -79,8 +95,8 @@ const SectionCard = ({
             className="flex w-full items-start justify-between gap-3 text-left"
           >
             <div>
-              <h3 className="text-[15px] font-semibold text-ink">{title}</h3>
-              <p className="mt-1 text-xs leading-5 text-muted">{subtitle}</p>
+              <h3 className="text-sm font-semibold text-ink">{title}</h3>
+              <p className="mt-0.5 text-xs leading-5 text-muted">{subtitle}</p>
             </div>
             <span
               className={`mt-0.5 rounded-full border border-line bg-white/70 p-1.5 text-muted transition-transform duration-200 dark:bg-slate-950/70 ${
@@ -92,12 +108,12 @@ const SectionCard = ({
           </button>
           <div
             className={`grid transition-all duration-200 ease-out ${
-              open ? 'mt-4 grid-rows-[1fr] opacity-100' : 'mt-0 grid-rows-[0fr] opacity-70'
+              open ? 'mt-3 grid-rows-[1fr] opacity-100' : 'mt-0 grid-rows-[0fr] opacity-70'
             }`}
           >
             <div className="overflow-hidden">
               {children}
-              {actions ? <div className="mt-4 border-t border-line/70 pt-4">{actions}</div> : null}
+              {actions ? <div className="mt-3 pt-3">{actions}</div> : null}
             </div>
           </div>
         </div>
@@ -109,7 +125,7 @@ const SectionCard = ({
 const SafetyPattern = ({ seed }: { seed: string }) => {
   const cells = Array.from({ length: 81 }, (_, index) => {
     const source = seed.charCodeAt(index % Math.max(seed.length, 1)) || index * 17;
-    return ((source + index * 13) % 7) < 3;
+    return (source + index * 13) % 7 < 3;
   });
 
   return (
@@ -155,7 +171,7 @@ const TIMER_OPTIONS = [
   { label: 'Off', seconds: 0 },
   { label: '5 min', seconds: 300 },
   { label: '1 hour', seconds: 3600 },
-  { label: '1 day', seconds: 86400 }
+  { label: '1 day', seconds: 86400 },
 ];
 
 const getOtherParticipant = (chat: ChatDto, currentUserId: string) =>
@@ -175,7 +191,7 @@ export const ChatInfoPanel = ({
   onAddGroupMember,
   onRemoveGroupMember,
   isUpdatingGroupMembers,
-  onClose
+  onClose,
 }: ChatInfoPanelProps) => {
   const otherUser = getOtherParticipant(chat, currentUser.id);
   const groupMembers = chat.participants.filter((participant) => participant.id !== currentUser.id);
@@ -190,10 +206,13 @@ export const ChatInfoPanel = ({
   const debouncedSearch = useDebouncedValue(search.trim(), 240);
   const canManageGroup = chat.isGroupChat && chat.admins.includes(currentUser.id);
   const availableUsers = directoryUsers.filter(
-    (candidate) => candidate.id !== currentUser.id && !chat.participants.some((participant) => participant.id === candidate.id)
+    (candidate) =>
+      candidate.id !== currentUser.id &&
+      !chat.participants.some((participant) => participant.id === candidate.id),
   );
   const safetySeed =
-    verification?.combinedFingerprint ?? `${localFingerprint ?? 'local'}:${primaryDevice?.fingerprint ?? 'peer'}`;
+    verification?.combinedFingerprint ??
+    `${localFingerprint ?? 'local'}:${primaryDevice?.fingerprint ?? 'peer'}`;
 
   useEffect(() => {
     setGroupNameDraft(chat.name ?? '');
@@ -241,10 +260,10 @@ export const ChatInfoPanel = ({
                 id: currentUser.id,
                 name: currentUser.name,
                 username: currentUser.username,
-                avatarUrl: currentUser.avatarUrl ?? null
+                avatarUrl: currentUser.avatarUrl ?? null,
               },
-              createdAt: item.createdAt
-            }))
+              createdAt: item.createdAt,
+            })),
         );
         setIsSearchingMessages(false);
       }
@@ -263,7 +282,9 @@ export const ChatInfoPanel = ({
     }
 
     if (verification.status === 'verified') {
-      return verification.verifiedAt ? `Verified on ${new Date(verification.verifiedAt).toLocaleString()}` : 'Verified';
+      return verification.verifiedAt
+        ? `Verified on ${new Date(verification.verifiedAt).toLocaleString()}`
+        : 'Verified';
     }
 
     if (verification.status === 'changed') {
@@ -304,27 +325,32 @@ export const ChatInfoPanel = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-30 bg-slate-950/30 backdrop-blur-sm xl:hidden" onClick={onClose} />
+      <div
+        className="fixed inset-0 z-30 bg-slate-950/30 backdrop-blur-sm xl:hidden"
+        onClick={onClose}
+      />
       <aside className="fixed inset-y-0 right-0 z-40 flex w-full max-w-[380px] min-h-0 flex-col overflow-hidden border-l border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))] shadow-[0_30px_120px_rgba(15,23,42,0.22)] backdrop-blur-2xl transition-all duration-200 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.94),rgba(2,6,23,0.94))] xl:relative xl:inset-auto xl:z-auto xl:w-[360px] xl:max-w-none xl:shadow-none">
         <div className="border-b border-line/80 px-5 py-4">
           <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold text-ink">Conversation details</p>
-            <p className="mt-1 text-xs leading-5 text-muted">People, shared activity, and privacy controls</p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full border border-line bg-white/70 p-2 text-muted transition hover:border-accent/25 hover:text-accent dark:bg-slate-950/70"
-          >
-            <X className="h-4 w-4" />
-          </button>
+            <div>
+              <p className="text-sm font-semibold text-ink">Conversation details</p>
+              <p className="mt-1 text-xs leading-5 text-muted">
+                People, shared activity, and privacy controls
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-full border border-line bg-white/70 p-2 text-muted transition hover:border-accent/25 hover:text-accent dark:bg-slate-950/70"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-3">
           {chat.isGroupChat ? (
-            <section className="glass-card rounded-[30px] p-5 sm:p-6">
+            <section className="border-b border-line/80 py-5">
               <div className="flex flex-col items-center text-center">
                 <Avatar src={null} alt={chat.name ?? 'Group chat'} size="lg" />
                 {isEditingGroupName ? (
@@ -347,14 +373,20 @@ export const ChatInfoPanel = ({
                       >
                         Cancel
                       </Button>
-                      <Button fullWidth onClick={() => void handleRenameGroup()} disabled={isRenamingGroup}>
+                      <Button
+                        fullWidth
+                        onClick={() => void handleRenameGroup()}
+                        disabled={isRenamingGroup}
+                      >
                         {isRenamingGroup ? 'Saving...' : 'Save'}
                       </Button>
                     </div>
                   </div>
                 ) : (
                   <div className="mt-4 flex items-center gap-2">
-                    <h3 className="text-[28px] font-semibold leading-none">{chat.name ?? 'Untitled group'}</h3>
+                    <h3 className="text-[28px] font-semibold leading-none">
+                      {chat.name ?? 'Untitled group'}
+                    </h3>
                     {canManageGroup ? (
                       <button
                         type="button"
@@ -402,19 +434,26 @@ export const ChatInfoPanel = ({
               </div>
             </section>
           ) : otherUser ? (
-            <section className="glass-card rounded-[30px] p-5 sm:p-6">
-              <div className="flex flex-col items-center text-center">
-                <Avatar src={otherUser.avatarUrl} alt={otherUser.name} online={otherUser.isOnline} size="lg" />
-                <h3 className="mt-4 text-[28px] font-semibold leading-none">{otherUser.name}</h3>
-                <p className="mt-2 text-sm text-muted">@{otherUser.username}</p>
-                <div className="mt-4 flex items-center gap-2">
-                  <MemberBadge label="Direct chat" />
-                  <MemberBadge label="E2EE" />
+            <section className="border-b border-line/80 py-5">
+              <div className="flex items-center gap-3">
+                <Avatar
+                  src={otherUser.avatarUrl}
+                  alt={otherUser.name}
+                  online={otherUser.isOnline}
+                  size="lg"
+                />
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate text-lg font-semibold leading-none">{otherUser.name}</h3>
+                  <p className="mt-1 truncate text-sm text-muted">@{otherUser.username}</p>
+                  <div className="mt-2 flex items-center gap-1.5">
+                    <MemberBadge label="Direct" />
+                    <MemberBadge label="E2EE" />
+                  </div>
                 </div>
-                <p className="mt-4 max-w-[250px] text-sm leading-6 text-muted">
-                  {otherUser.bio ?? 'No bio added yet.'}
-                </p>
               </div>
+              <p className="mt-3 text-sm leading-6 text-muted">
+                {otherUser.bio ?? 'No bio added yet.'}
+              </p>
             </section>
           ) : null}
 
@@ -430,9 +469,13 @@ export const ChatInfoPanel = ({
                   availableUsers.slice(0, 8).map((candidate) => (
                     <div
                       key={candidate.id}
-                    className="flex items-center gap-3 rounded-[22px] border border-line/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(248,250,252,0.72))] px-3 py-3 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.82),rgba(15,23,42,0.62))]"
+                      className="flex items-center gap-3 rounded-[22px] border border-line/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(248,250,252,0.72))] px-3 py-3 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.82),rgba(15,23,42,0.62))]"
                     >
-                      <Avatar src={candidate.avatarUrl} alt={candidate.name} online={candidate.isOnline} />
+                      <Avatar
+                        src={candidate.avatarUrl}
+                        alt={candidate.name}
+                        online={candidate.isOnline}
+                      />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-semibold">{candidate.name}</p>
                         <p className="truncate text-xs text-muted">@{candidate.username}</p>
@@ -464,7 +507,8 @@ export const ChatInfoPanel = ({
             >
               <div className="space-y-3 text-sm leading-6 text-muted">
                 <div className="rounded-[22px] border border-line/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.84),rgba(248,250,252,0.76))] px-3 py-3 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.82),rgba(15,23,42,0.64))]">
-                  Group conversations have their own privacy model. Use direct chats for private one-to-one conversations.
+                  Group conversations have their own privacy model. Use direct chats for private
+                  one-to-one conversations.
                 </div>
                 <div className="rounded-[22px] border border-line/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.84),rgba(248,250,252,0.76))] px-3 py-3 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.82),rgba(15,23,42,0.64))]">
                   Device verification is available for direct conversations.
@@ -476,9 +520,14 @@ export const ChatInfoPanel = ({
               icon={<ShieldCheck className="h-5 w-5 text-accent" />}
               title="Verify this chat"
               subtitle={verificationLabel}
+              defaultOpen={false}
               actions={
                 <div className="space-y-2">
-                  <Button fullWidth onClick={onVerifySafetyNumber} disabled={!primaryDevice || !localFingerprint}>
+                  <Button
+                    fullWidth
+                    onClick={onVerifySafetyNumber}
+                    disabled={!primaryDevice || !localFingerprint}
+                  >
                     Mark as verified
                   </Button>
                   <Button
@@ -497,7 +546,11 @@ export const ChatInfoPanel = ({
                   label="Your fingerprint"
                   value={localFingerprint ?? 'Loading...'}
                   mono
-                  onCopy={localFingerprint ? () => void handleCopy('local-fingerprint', localFingerprint) : undefined}
+                  onCopy={
+                    localFingerprint
+                      ? () => void handleCopy('local-fingerprint', localFingerprint)
+                      : undefined
+                  }
                   copied={copiedField === 'local-fingerprint'}
                 />
                 <InfoRow
@@ -513,7 +566,9 @@ export const ChatInfoPanel = ({
                 />
                 <InfoRow
                   label="Safety number"
-                  value={verification?.combinedFingerprint ?? 'Compare once peer bundle is available'}
+                  value={
+                    verification?.combinedFingerprint ?? 'Compare once peer bundle is available'
+                  }
                   mono
                   onCopy={
                     verification?.combinedFingerprint
@@ -528,7 +583,7 @@ export const ChatInfoPanel = ({
 
           <SectionCard
             icon={<TimerReset className="h-5 w-5 text-accent" />}
-              title="Message timer"
+            title="Message timer"
             subtitle="Server purges expired ciphertext automatically."
             defaultOpen={false}
           >
@@ -536,7 +591,9 @@ export const ChatInfoPanel = ({
               {TIMER_OPTIONS.map((option) => (
                 <Button
                   key={option.seconds}
-                  variant={chat.disappearingModeSeconds === option.seconds ? 'primary' : 'secondary'}
+                  variant={
+                    chat.disappearingModeSeconds === option.seconds ? 'primary' : 'secondary'
+                  }
                   onClick={() => onUpdateDisappearingMode(option.seconds)}
                 >
                   {option.label}
@@ -565,12 +622,17 @@ export const ChatInfoPanel = ({
                 <p className="text-xs text-muted">Searching messages...</p>
               ) : searchResults.length > 0 ? (
                 searchResults.map((item) => (
-                  <div key={item.messageId} className="rounded-[22px] border border-line/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.84),rgba(248,250,252,0.74))] px-3 py-3 text-sm shadow-sm dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.82),rgba(15,23,42,0.64))]">
+                  <div
+                    key={item.messageId}
+                    className="rounded-[22px] border border-line/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.84),rgba(248,250,252,0.74))] px-3 py-3 text-sm shadow-sm dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.82),rgba(15,23,42,0.64))]"
+                  >
                     <p className="line-clamp-2">{item.previewText}</p>
                     <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-muted">
                       {item.matchSource}
                     </p>
-                    <p className="mt-1 text-[11px] text-muted">{new Date(item.createdAt).toLocaleString()}</p>
+                    <p className="mt-1 text-[11px] text-muted">
+                      {new Date(item.createdAt).toLocaleString()}
+                    </p>
                   </div>
                 ))
               ) : (
@@ -593,7 +655,9 @@ export const ChatInfoPanel = ({
             <div className="w-full max-w-[320px] rounded-[30px] border border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.94))] p-5 shadow-[0_20px_80px_rgba(15,23,42,0.22)] dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.96),rgba(2,6,23,0.94))]">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">Verify together</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">
+                    Verify together
+                  </p>
                   <h3 className="mt-1 text-lg font-semibold">Safety verification sheet</h3>
                   <p className="mt-1 text-xs leading-5 text-muted">
                     Compare this code on both devices before marking the conversation as verified.
@@ -614,7 +678,9 @@ export const ChatInfoPanel = ({
                     <UserRound className="h-7 w-7" />
                   </div>
                   <SafetyPattern seed={safetySeed} />
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">Verification code</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
+                    Verification code
+                  </p>
                   <p className="break-all font-mono text-sm leading-6 text-slate-800 dark:text-slate-100">
                     {verification?.combinedFingerprint ?? 'Compare once peer bundle is available'}
                   </p>
@@ -626,7 +692,11 @@ export const ChatInfoPanel = ({
                   label="Your fingerprint"
                   value={localFingerprint ?? 'Loading...'}
                   mono
-                  onCopy={localFingerprint ? () => void handleCopy('sheet-local-fingerprint', localFingerprint) : undefined}
+                  onCopy={
+                    localFingerprint
+                      ? () => void handleCopy('sheet-local-fingerprint', localFingerprint)
+                      : undefined
+                  }
                   copied={copiedField === 'sheet-local-fingerprint'}
                 />
                 <InfoRow
