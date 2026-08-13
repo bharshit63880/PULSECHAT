@@ -66,7 +66,7 @@ export const ChatHeader = ({
         transition={{ duration: 0.22, ease: 'easeOut' }}
         className="border-b border-line/80 mobile-nav-blur px-4 py-3 sm:px-5"
       >
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center justify-between gap-2 sm:gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <Button
               variant="ghost"
@@ -82,20 +82,20 @@ export const ChatHeader = ({
                 <p className="truncate text-base font-semibold tracking-tight sm:text-lg">
                   {title}
                 </p>
-                <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2.5 py-1 text-[10px] font-semibold text-accent">
+                <span className="hidden items-center gap-1 rounded-full bg-accent-soft px-2.5 py-1 text-[10px] font-semibold text-accent sm:inline-flex">
                   <ShieldCheck className="h-3 w-3" />
                   {chat.isGroupChat ? 'Group' : 'Private'}
                 </span>
               </div>
               <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
                 <span className="truncate">{subtitle}</span>
-                <span className="inline-flex rounded-full border border-line/80 bg-card-muted/55 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] dark:bg-white/[0.035]">
+                <span className="hidden rounded-full border border-line/80 bg-card-muted/55 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] md:inline-flex dark:bg-white/[0.035]">
                   {formatDisappearingMode(chat.disappearingModeSeconds)}
                 </span>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             {!chat.isGroupChat && onVoiceCall ? (
               <Button
                 aria-label="Start voice call"

@@ -84,22 +84,22 @@ const SectionCard = ({
 
   return (
     <section className="border-b border-line/80 py-4 last:border-b-0 transition-all duration-200">
-      <div className="flex items-start gap-3">
-        <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-accent-soft text-accent dark:text-emerald-200">
+      <div className="flex min-w-0 items-start gap-3">
+        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent dark:text-emerald-200">
           {icon}
         </div>
         <div className="min-w-0 flex-1">
           <button
             type="button"
             onClick={() => setOpen((current) => !current)}
-            className="flex w-full items-start justify-between gap-3 text-left"
+            className="flex w-full min-w-0 items-start justify-between gap-3 text-left"
           >
-            <div>
+            <div className="min-w-0">
               <h3 className="text-sm font-semibold text-ink">{title}</h3>
-              <p className="mt-0.5 text-xs leading-5 text-muted">{subtitle}</p>
+              <p className="mt-0.5 break-words text-xs leading-5 text-muted">{subtitle}</p>
             </div>
             <span
-              className={`mt-0.5 rounded-full border border-line bg-white/70 p-1.5 text-muted transition-transform duration-200 dark:bg-slate-950/70 ${
+              className={`mt-0.5 shrink-0 rounded-full border border-line bg-white/70 p-1.5 text-muted transition-transform duration-200 dark:bg-slate-950/70 ${
                 open ? 'rotate-180' : ''
               }`}
             >
@@ -326,22 +326,22 @@ export const ChatInfoPanel = ({
   return (
     <>
       <div
-        className="fixed inset-0 z-30 bg-slate-950/30 backdrop-blur-sm xl:hidden"
+        className="fixed inset-0 z-30 bg-slate-950/30 backdrop-blur-sm 2xl:hidden"
         onClick={onClose}
       />
-      <aside className="fixed inset-y-0 right-0 z-40 flex w-full max-w-[380px] min-h-0 flex-col overflow-hidden border-l border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))] shadow-[0_30px_120px_rgba(15,23,42,0.22)] backdrop-blur-2xl transition-all duration-200 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.94),rgba(2,6,23,0.94))] xl:relative xl:inset-auto xl:z-auto xl:w-[360px] xl:max-w-none xl:shadow-none">
+      <aside className="fixed inset-y-2 right-2 z-40 flex w-[min(380px,calc(100vw-1rem))] min-w-0 flex-col overflow-x-hidden overflow-y-hidden rounded-3xl border border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.94))] shadow-[0_30px_120px_rgba(15,23,42,0.3)] backdrop-blur-2xl transition-all duration-200 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.97),rgba(2,6,23,0.96))] 2xl:relative 2xl:inset-auto 2xl:z-auto 2xl:h-full 2xl:w-[340px] 2xl:rounded-none 2xl:border-y-0 2xl:border-r-0 2xl:shadow-none">
         <div className="border-b border-line/80 px-5 py-4">
-          <div className="flex items-center justify-between gap-3">
-            <div>
+          <div className="flex min-w-0 items-center justify-between gap-3">
+            <div className="min-w-0">
               <p className="text-sm font-semibold text-ink">Conversation details</p>
-              <p className="mt-1 text-xs leading-5 text-muted">
+              <p className="mt-1 truncate text-xs leading-5 text-muted">
                 People, shared activity, and privacy controls
               </p>
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full border border-line bg-white/70 p-2 text-muted transition hover:border-accent/25 hover:text-accent dark:bg-slate-950/70"
+              className="shrink-0 rounded-full border border-line bg-white/70 p-2 text-muted transition hover:border-accent/25 hover:text-accent dark:bg-slate-950/70"
             >
               <X className="h-4 w-4" />
             </button>
