@@ -40,7 +40,7 @@ export const AppRail = ({ currentUser }: { currentUser: AuthUser }) => {
     <nav className="hidden h-full flex-col items-center border-r border-line/75 bg-bg-elevated/65 px-3 py-5 lg:flex">
       <Link to="/" aria-label="PulseChat conversations" className="mb-9">
         <img
-          src="/pulsechat-mark.svg"
+          src="/pulsechat-metal-mark.svg"
           alt="PulseChat"
           className="h-10 w-10 rounded-xl shadow-[0_10px_25px_rgba(112,67,246,0.3)]"
         />

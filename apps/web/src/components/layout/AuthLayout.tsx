@@ -35,7 +35,7 @@ export const AuthLayout = ({ children }: PropsWithChildren) => (
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-3">
                 <img
-                  src="/pulsechat-mark.svg"
+                  src="/pulsechat-metal-mark.svg"
                   alt="PulseChat"
                   className="h-11 w-11 rounded-2xl shadow-[0_12px_30px_rgba(93,63,255,0.34)]"
                 />

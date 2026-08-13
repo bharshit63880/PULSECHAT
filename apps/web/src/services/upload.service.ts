@@ -6,9 +6,9 @@ export const uploadService = {
   async uploadAvatar(file: File) {
     const formData = new FormData();
     formData.append('file', file);
-    const response = await api.post<{ data: AttachmentDto }>('/uploads/avatar', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
+    // Let the browser set the multipart boundary. Supplying Content-Type manually
+    // can omit it, which prevents Multer from receiving the selected file.
+    const response = await api.post<{ data: AttachmentDto }>('/uploads/avatar', formData);
 
     return response.data.data;
   },
@@ -19,11 +19,8 @@ export const uploadService = {
     const response = await api.post<{ data: AttachmentDto & { type: 'image' | 'file' } }>(
       '/uploads/attachment',
       formData,
-      {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      }
     );
 
     return response.data.data;
-  }
+  },
 };
