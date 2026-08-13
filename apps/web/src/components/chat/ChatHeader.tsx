@@ -67,7 +67,7 @@ export const ChatHeader = ({
         className="border-b border-line/80 mobile-nav-blur px-4 py-3 sm:px-5"
       >
         <div className="flex min-w-0 items-center justify-between gap-2 sm:gap-3">
-          <div className="flex min-w-0 items-center gap-3">
+          <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3">
             <Button
               variant="ghost"
               className="h-11 w-11 rounded-2xl p-0 lg:hidden"
@@ -76,7 +76,9 @@ export const ChatHeader = ({
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <Avatar src={counterpart?.avatarUrl} alt={title} online={counterpart?.isOnline} />
+            <div className="shrink-0">
+              <Avatar src={counterpart?.avatarUrl} alt={title} online={counterpart?.isOnline} />
+            </div>
             <div className="min-w-0">
               <div className="flex min-w-0 items-center gap-2">
                 <p className="truncate text-base font-semibold tracking-tight sm:text-lg">

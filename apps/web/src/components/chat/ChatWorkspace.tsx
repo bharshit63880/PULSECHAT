@@ -579,7 +579,7 @@ export const ChatWorkspace = () => {
   };
 
   return (
-    <div className="safe-px safe-pt safe-pb h-screen">
+    <div className="safe-px safe-pt safe-pb h-[100dvh] min-h-[100svh]">
       <div
         className={`glass-panel grid h-full overflow-hidden rounded-3xl ${
           activeChat && isInfoPanelOpen
@@ -625,14 +625,16 @@ export const ChatWorkspace = () => {
         >
           {activeChat ? (
             <>
-              <ChatHeader
-                chat={activeChat}
-                currentUserId={user.id}
-                onBack={() => setShowMobileChat(false)}
-                onToggleInfo={() => setInfoPanelOpen(!isInfoPanelOpen)}
-                onVoiceCall={() => void calls.begin(activeChat, 'audio')}
-                isCalling={Boolean(calls.call)}
-              />
+              <div className="shrink-0">
+                <ChatHeader
+                  chat={activeChat}
+                  currentUserId={user.id}
+                  onBack={() => setShowMobileChat(false)}
+                  onToggleInfo={() => setInfoPanelOpen(!isInfoPanelOpen)}
+                  onVoiceCall={() => void calls.begin(activeChat, 'audio')}
+                  isCalling={Boolean(calls.call)}
+                />
+              </div>
               <div className="chat-canvas min-h-0 flex-1 overflow-hidden">
                 {messagesQuery.isError ? (
                   <div className="h-full p-4">
@@ -662,12 +664,14 @@ export const ChatWorkspace = () => {
                   />
                 )}
               </div>
-              <MessageComposer
-                disabled={!activeChat.isGroupChat && !primaryPeerDevice}
-                onTypingStart={handleTypingStart}
-                onTypingStop={handleTypingStop}
-                onSend={handleSend}
-              />
+              <div className="shrink-0">
+                <MessageComposer
+                  disabled={!activeChat.isGroupChat && !primaryPeerDevice}
+                  onTypingStart={handleTypingStart}
+                  onTypingStop={handleTypingStop}
+                  onSend={handleSend}
+                />
+              </div>
             </>
           ) : (
             <div className="flex h-full items-center justify-center p-4 sm:p-6">

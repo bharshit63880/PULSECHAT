@@ -20,13 +20,15 @@ export const MessageComposer = ({
   onSend,
   onTypingStart,
   onTypingStop,
-  disabled
+  disabled,
 }: MessageComposerProps) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const typingTimeoutRef = useRef<number | null>(null);
   const [text, setText] = useState('');
   const [attachment, setAttachment] = useState<File | null>(null);
-  const [attachmentType, setAttachmentType] = useState<'image' | 'file' | 'gif' | 'sticker' | null>(null);
+  const [attachmentType, setAttachmentType] = useState<'image' | 'file' | 'gif' | 'sticker' | null>(
+    null,
+  );
   const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
   const [mediaTab, setMediaTab] = useState<'emoji' | 'gif' | 'sticker'>('emoji');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -75,8 +77,8 @@ export const MessageComposer = ({
         text: text.trim() || null,
         file: attachment,
         type: attachment
-          ? attachmentType ?? (attachment.type.startsWith('image/') ? 'image' : 'file')
-          : 'text'
+          ? (attachmentType ?? (attachment.type.startsWith('image/') ? 'image' : 'file'))
+          : 'text',
       });
 
       setText('');
@@ -89,9 +91,10 @@ export const MessageComposer = ({
         typeof error === 'object' &&
         error !== null &&
         'response' in error &&
-        typeof (error as { response?: { data?: { error?: { message?: string } } } }).response?.data?.error?.message ===
-          'string'
-          ? (error as { response?: { data?: { error?: { message?: string } } } }).response!.data!.error!.message!
+        typeof (error as { response?: { data?: { error?: { message?: string } } } }).response?.data
+          ?.error?.message === 'string'
+          ? (error as { response?: { data?: { error?: { message?: string } } } }).response!.data!
+              .error!.message!
           : 'Unable to send this message right now';
 
       toast.error(message);
@@ -102,7 +105,15 @@ export const MessageComposer = ({
 
   const handleStandardAttachmentChange = (file: File | null) => {
     setAttachment(file);
-    setAttachmentType(file ? (file.type === 'image/gif' ? 'gif' : file.type.startsWith('image/') ? 'image' : 'file') : null);
+    setAttachmentType(
+      file
+        ? file.type === 'image/gif'
+          ? 'gif'
+          : file.type.startsWith('image/')
+            ? 'image'
+            : 'file'
+        : null,
+    );
     setIsMediaPickerOpen(false);
   };
 
@@ -111,7 +122,7 @@ export const MessageComposer = ({
       ? `Sticker ready: ${attachment?.name ?? 'sticker'}`
       : attachmentType === 'gif'
         ? `GIF ready: ${attachment?.name ?? 'animated media'}`
-        : attachment?.name ?? null;
+        : (attachment?.name ?? null);
 
   const placeholder =
     attachmentType === 'sticker'
@@ -123,7 +134,7 @@ export const MessageComposer = ({
           : 'Write a secure message';
 
   return (
-    <div className="border-t border-line bg-card px-3 pb-[calc(0.75rem+var(--safe-bottom))] pt-2 sm:px-4 lg:px-5">
+    <div className="border-t border-line bg-card px-3 pb-[max(0.75rem,calc(0.75rem+var(--safe-bottom)))] pt-2 sm:px-4 lg:px-5">
       {isMediaPickerOpen ? (
         <MediaPicker
           activeTab={mediaTab}
@@ -207,34 +218,34 @@ export const MessageComposer = ({
           </Button>
         </div>
 
-          <textarea
-            value={text}
-            onChange={(event) => {
-              setText(event.target.value);
-              onTypingStart();
-              scheduleTypingStop();
-            }}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                void handleSubmit();
-              }
-            }}
-            rows={1}
-            placeholder={placeholder}
-            className="min-h-[44px] max-h-32 flex-1 resize-none bg-transparent px-2 py-2.5 text-sm text-ink outline-none placeholder:text-muted"
-            disabled={disabled || isSubmitting}
-          />
-          <Button
-            type="button"
-            className="h-10 w-10 rounded-xl p-0"
-            aria-label="Send message"
-            title="Send message"
-            onClick={() => void handleSubmit()}
-            disabled={disabled || isSubmitting}
-          >
-            <SendHorizonal className="h-4.5 w-4.5" />
-          </Button>
+        <textarea
+          value={text}
+          onChange={(event) => {
+            setText(event.target.value);
+            onTypingStart();
+            scheduleTypingStop();
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+              event.preventDefault();
+              void handleSubmit();
+            }
+          }}
+          rows={1}
+          placeholder={placeholder}
+          className="min-h-[44px] max-h-32 flex-1 resize-none bg-transparent px-2 py-2.5 text-sm text-ink outline-none placeholder:text-muted"
+          disabled={disabled || isSubmitting}
+        />
+        <Button
+          type="button"
+          className="h-10 w-10 rounded-xl p-0"
+          aria-label="Send message"
+          title="Send message"
+          onClick={() => void handleSubmit()}
+          disabled={disabled || isSubmitting}
+        >
+          <SendHorizonal className="h-4.5 w-4.5" />
+        </Button>
       </div>
     </div>
   );
