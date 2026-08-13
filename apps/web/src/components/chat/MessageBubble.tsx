@@ -5,6 +5,8 @@ import {
   CheckIcon,
   Clock3,
   Download,
+  FileText,
+  ImageIcon,
   LoaderCircle,
   RefreshCcw,
   SmilePlus,
@@ -33,9 +35,11 @@ const QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '🙏'];
 const AttachmentPreview = ({
   attachment,
   peerPublicAgreementKey,
+  own,
 }: {
   attachment: AttachmentDto;
   peerPublicAgreementKey?: string | null;
+  own: boolean;
 }) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isDecrypting, setIsDecrypting] = useState(false);
@@ -95,23 +99,45 @@ const AttachmentPreview = ({
         src={previewUrl}
         alt={attachment.fileName}
         className={cn(
-          'mb-2 object-cover',
+          'mb-1.5 max-w-[min(100%,26rem)] object-cover',
           isSticker
-            ? 'h-44 w-44 object-contain drop-shadow-[0_18px_30px_rgba(15,23,42,0.14)]'
-            : 'max-h-80 w-full rounded-[24px]',
+            ? 'h-36 w-36 object-contain drop-shadow-[0_18px_30px_rgba(15,23,42,0.14)]'
+            : 'max-h-64 w-full rounded-2xl',
         )}
       />
     );
   }
 
   return (
-    <div className="mb-2 rounded-[24px] border border-white/15 bg-white/10 p-3 text-sm dark:border-line dark:bg-slate-900/55">
-      <p className="truncate font-medium">{attachment.fileName}</p>
-      <div className="mt-3 flex items-center gap-2">
+    <div
+      className={cn(
+        'mb-1.5 flex max-w-[min(100%,23rem)] items-center gap-3 rounded-2xl border p-2.5 text-sm',
+        own ? 'border-white/15 bg-black/10' : 'border-line bg-card-muted/80 dark:bg-slate-900/55',
+      )}
+    >
+      <div
+        className={cn(
+          'grid h-9 w-9 shrink-0 place-items-center rounded-xl',
+          own ? 'bg-white/15 text-white' : 'bg-accent-soft text-accent',
+        )}
+      >
+        {isImageLike ? <ImageIcon className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="truncate font-medium">{attachment.fileName}</p>
+        <p className={cn('mt-0.5 text-[11px]', own ? 'text-white/70' : 'text-muted')}>
+          Encrypted {isImageLike ? 'image' : 'file'}
+        </p>
+      </div>
+      <div className="flex shrink-0 items-center gap-1.5">
         <button
           type="button"
           onClick={() => void handleDecrypt()}
-          className="inline-flex min-h-9 items-center gap-2 rounded-full border border-white/15 px-3 py-1 text-xs transition hover:bg-white/10 dark:border-line"
+          aria-label={isImageLike ? 'Decrypt image preview' : 'Decrypt file for download'}
+          className={cn(
+            'grid h-9 w-9 place-items-center rounded-xl border transition',
+            own ? 'border-white/15 hover:bg-white/10' : 'border-line hover:bg-card',
+          )}
           disabled={isDecrypting}
         >
           {isDecrypting ? (
@@ -119,11 +145,18 @@ const AttachmentPreview = ({
           ) : (
             <Download className="h-3.5 w-3.5" />
           )}
-          {attachment.mimeType.startsWith('image/') ? 'Decrypt preview' : 'Decrypt download'}
         </button>
         {previewUrl && !attachment.mimeType.startsWith('image/') ? (
-          <a href={previewUrl} download={attachment.fileName} className="text-xs underline">
-            Save file
+          <a
+            href={previewUrl}
+            download={attachment.fileName}
+            aria-label={`Save ${attachment.fileName}`}
+            className={cn(
+              'grid h-9 w-9 place-items-center rounded-xl border transition',
+              own ? 'border-white/15 hover:bg-white/10' : 'border-line hover:bg-card',
+            )}
+          >
+            <Download className="h-3.5 w-3.5" />
           </a>
         ) : null}
       </div>
@@ -168,7 +201,7 @@ export const MessageBubble = ({
   return (
     <div className={cn('flex px-1 py-1.5', own ? 'justify-end' : 'justify-start')}>
       <div
-        className={cn('group relative max-w-[min(82%,38rem)]', own ? 'items-end' : 'items-start')}
+        className={cn('group relative max-w-[min(76%,32rem)]', own ? 'items-end' : 'items-start')}
       >
         {onReact ? (
           <div
@@ -231,6 +264,7 @@ export const MessageBubble = ({
             <AttachmentPreview
               attachment={message.attachment}
               peerPublicAgreementKey={peerPublicAgreementKey}
+              own={own}
             />
           ) : null}
 
