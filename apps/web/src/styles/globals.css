@@ -140,14 +140,16 @@
 
   .chat-canvas {
     background-color: rgb(var(--color-bg-elevated));
-    background-image: radial-gradient(rgba(148, 163, 184, 0.16) 1px, transparent 1px);
-    background-size: 22px 22px;
+    background-image:
+      radial-gradient(circle at 18% 8%, rgba(167, 139, 250, 0.07), transparent 30%),
+      radial-gradient(circle at 88% 92%, rgba(14, 165, 233, 0.05), transparent 28%);
   }
 
   .dark .chat-canvas {
     background-image:
-      radial-gradient(rgba(181, 166, 255, 0.12) 1px, transparent 1px),
-      radial-gradient(circle at 55% 0%, rgba(117, 70, 255, 0.12), transparent 44%);
+      radial-gradient(circle at 52% 0%, rgba(117, 70, 255, 0.14), transparent 42%),
+      radial-gradient(circle at 8% 100%, rgba(201, 74, 255, 0.08), transparent 28%),
+      radial-gradient(circle at 96% 56%, rgba(74, 111, 255, 0.07), transparent 30%);
   }
 
   .text-balance {
