@@ -48,7 +48,7 @@ const getMemoryJson = <T>(key: string) => {
 const setMemoryJson = (key: string, value: JsonValue, ttlSeconds?: number) => {
   memoryStore.set(key, {
     value: JSON.stringify(value),
-    expiresAt: ttlSeconds ? Date.now() + ttlSeconds * 1000 : null
+    expiresAt: ttlSeconds ? Date.now() + ttlSeconds * 1000 : null,
   });
 };
 
@@ -68,8 +68,8 @@ const connectRedisClients = async () => {
       url: env.REDIS_URL,
       socket: {
         connectTimeout: 3_000,
-        reconnectStrategy: false
-      }
+        reconnectStrategy: false,
+      },
     });
     pubClient = commandClient.duplicate();
     subClient = commandClient.duplicate();
@@ -87,7 +87,7 @@ const connectRedisClients = async () => {
     await Promise.all([commandClient.connect(), pubClient.connect(), subClient.connect()]);
     ready = true;
 
-    logger.info({ redisUrl: env.REDIS_URL }, 'Redis cache connected');
+    logger.info('Redis cache connected');
   } catch (error) {
     ready = false;
     commandClient = null;
@@ -223,5 +223,5 @@ export const cacheService = {
 
     const raw = await commandClient.get(presenceCountKey(userId));
     return raw ? Number.parseInt(raw, 10) || 0 : 0;
-  }
+  },
 };
