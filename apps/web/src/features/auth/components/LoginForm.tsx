@@ -26,27 +26,29 @@ export const LoginForm = () => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const readErrorMessage = (error: unknown) =>
     axios.isAxiosError<ApiErrorResponse>(error)
-      ? error.response?.data?.error?.message ?? 'Unable to sign in with those credentials'
+      ? (error.response?.data?.error?.message ?? 'Unable to sign in with those credentials')
       : 'Unable to sign in with those credentials';
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
       email: '',
-      password: ''
-    }
+      password: '',
+    },
   });
 
   const loginMutation = useMutation({
     mutationFn: authApi.login,
     onSuccess: (result) => {
       setSession(result);
-      toast.success(result.user.isEmailVerified ? 'Welcome back' : 'Check your inbox to verify your email');
-      navigate(result.user.isEmailVerified ? '/' : '/verify-email');
+      toast.success(
+        result.user.isEmailVerified ? 'Welcome back' : 'Check your inbox to verify your email',
+      );
+      navigate(result.user.isEmailVerified ? '/app' : '/verify-email');
     },
     onError: (error) => {
       toast.error(readErrorMessage(error));
-    }
+    },
   });
 
   return (
@@ -64,16 +66,20 @@ export const LoginForm = () => {
             appVersion: device.appVersion,
             publicIdentityKey: device.publicIdentityKey,
             publicAgreementKey: device.publicAgreementKey,
-            fingerprint: device.fingerprint
-          }
+            fingerprint: device.fingerprint,
+          },
         });
       })}
     >
       <div className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">Welcome back</p>
         <div>
-          <h2 className="text-balance text-3xl font-semibold tracking-[-0.045em] sm:text-[2.1rem]">Sign in to Pulse Chat</h2>
-          <p className="mt-2 text-sm leading-6 text-muted">Pick up right where your conversations left off.</p>
+          <h2 className="text-balance text-3xl font-semibold tracking-[-0.045em] sm:text-[2.1rem]">
+            Sign in to Pulse Chat
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-muted">
+            Pick up right where your conversations left off.
+          </p>
         </div>
       </div>
 
@@ -82,7 +88,12 @@ export const LoginForm = () => {
           <label className="mb-2 block text-sm font-semibold text-ink">Email</label>
           <div className="relative">
             <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
-            <Input type="email" placeholder="Your email" className="pl-11" {...form.register('email')} />
+            <Input
+              type="email"
+              placeholder="Your email"
+              className="pl-11"
+              {...form.register('email')}
+            />
           </div>
           <p className="mt-1.5 text-xs text-rose-500">{form.formState.errors.email?.message}</p>
         </div>
@@ -110,15 +121,25 @@ export const LoginForm = () => {
       </div>
 
       <div className="mt-7 space-y-4">
-        <Button type="submit" fullWidth disabled={loginMutation.isPending} className="min-h-12 rounded-xl">
+        <Button
+          type="submit"
+          fullWidth
+          disabled={loginMutation.isPending}
+          className="min-h-12 rounded-xl"
+        >
           {loginMutation.isPending ? <Spinner /> : 'Sign in'}
         </Button>
 
-        <p className="text-center text-xs leading-5 text-muted">Your chats are ready on this device.</p>
+        <p className="text-center text-xs leading-5 text-muted">
+          Your chats are ready on this device.
+        </p>
 
         <p className="text-sm text-muted">
           New here?{' '}
-          <Link to="/register" className="font-semibold text-accent transition hover:text-accent/80">
+          <Link
+            to="/register"
+            className="font-semibold text-accent transition hover:text-accent/80"
+          >
             Create an account
           </Link>
         </p>

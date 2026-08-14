@@ -26,6 +26,12 @@ const PeoplePage = lazy(() =>
 const VerifyEmailPage = lazy(() =>
   import('@/pages/VerifyEmailPage').then((module) => ({ default: module.VerifyEmailPage })),
 );
+const LandingPage = lazy(() =>
+  import('@/pages/LandingPage').then((module) => ({ default: module.LandingPage })),
+);
+const DownloadPage = lazy(() =>
+  import('@/pages/DownloadPage').then((module) => ({ default: module.DownloadPage })),
+);
 
 const RouteLoader = () => (
   <div className="grid min-h-screen grid-cols-1 gap-4 p-4 lg:grid-cols-[320px_1fr]">
@@ -37,6 +43,8 @@ const RouteLoader = () => (
 export const AppRouter = () => (
   <Suspense fallback={<RouteLoader />}>
     <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/download" element={<DownloadPage />} />
       <Route
         path="/login"
         element={
@@ -55,7 +63,7 @@ export const AppRouter = () => (
       />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route
-        path="/"
+        path="/app"
         element={
           <ProtectedRoute>
             <ChatPage />

@@ -9,7 +9,7 @@ export const PublicOnlyRoute = ({ children }: PropsWithChildren) => {
   const user = useAuthStore((state) => state.user);
 
   if (token) {
-    return <Navigate to={user && !user.isEmailVerified ? '/verify-email' : '/'} replace />;
+    return <Navigate to={user && !user.isEmailVerified ? '/verify-email' : '/app'} replace />;
   }
 
   return <>{children}</>;
