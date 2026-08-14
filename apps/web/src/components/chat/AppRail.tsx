@@ -1,7 +1,14 @@
 import type { AuthUser } from '@chat-app/shared';
 import type { ReactNode } from 'react';
 
-import { LaptopMinimalCheck, MessageCircle, Settings, ShieldCheck, UsersRound } from 'lucide-react';
+import {
+  LaptopMinimalCheck,
+  MessageCircle,
+  PhoneCall,
+  Settings,
+  ShieldCheck,
+  UsersRound,
+} from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 import { Avatar } from '@/components/common/Avatar';
@@ -52,6 +59,9 @@ export const AppRail = ({ currentUser }: { currentUser: AuthUser }) => {
         </RailLink>
         <RailLink to="/people" label="People" active={location.pathname === '/people'}>
           <UsersRound className="h-5 w-5" />
+        </RailLink>
+        <RailLink to="/calls" label="Calls" active={location.pathname === '/calls'}>
+          <PhoneCall className="h-5 w-5" />
         </RailLink>
         <RailLink
           to="/devices"
