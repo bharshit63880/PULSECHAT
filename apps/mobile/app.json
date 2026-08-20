@@ -1,24 +1,25 @@
 {
   "expo": {
-    "name": "Pulse Private Messenger",
-    "slug": "pulse-private-messenger",
+    "name": "PulseChat",
+    "slug": "pulsechat",
     "scheme": "pulse-chat",
     "version": "1.0.0",
+    "icon": "./assets/pulsechat-adaptive-icon.png",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "package": "com.pulsechat.app",
+      "versionCode": 1,
+      "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
-        "backgroundColor": "#0f172a"
+        "foregroundImage": "./assets/pulsechat-adaptive-icon.png",
+        "backgroundColor": "#060611"
       }
     },
-    "plugins": [
-      "expo-secure-store"
-    ]
+    "plugins": ["expo-secure-store"]
   }
 }

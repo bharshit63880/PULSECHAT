@@ -35,8 +35,8 @@ const highlights = [
 
 const navItems = [
   { label: 'Features', href: '#features' },
-  { label: 'Security', href: '#security' },
-  { label: 'About', href: '#about' },
+  { label: 'Security', href: '/security' },
+  { label: 'About', href: '/about' },
   { label: 'Contact', href: '#contact' },
   { label: 'Download', href: '/download' },
 ];
@@ -223,10 +223,10 @@ export const LandingPage = () => (
               claims never substitute for a security boundary.
             </p>
             <Link
-              to="/app"
+              to="/security"
               className="inline-flex items-center gap-2 font-semibold text-violet-200 hover:text-white"
             >
-              Explore your secure workspace <ArrowRight className="h-4 w-4" />
+              Read security details <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </div>
@@ -249,6 +249,17 @@ export const LandingPage = () => (
         <div>
           <p className="font-semibold">PulseChat</p>
           <p className="mt-2 text-sm text-[#77748b]">Private conversations, built differently.</p>
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-violet-200">
+            <Link to="/privacy" className="hover:text-white">
+              Privacy
+            </Link>
+            <Link to="/security" className="hover:text-white">
+              Security
+            </Link>
+            <Link to="/about" className="hover:text-white">
+              About
+            </Link>
+          </div>
         </div>
         <div className="flex items-center gap-2 text-sm text-[#b7b4c8]">
           <Webhook className="h-4 w-4 text-violet-300" /> Contact support is coming with a verified

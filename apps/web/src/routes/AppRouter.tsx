@@ -35,6 +35,15 @@ const LandingPage = lazy(() =>
 const DownloadPage = lazy(() =>
   import('@/pages/DownloadPage').then((module) => ({ default: module.DownloadPage })),
 );
+const AboutPage = lazy(() =>
+  import('@/pages/ProductInfoPage').then((module) => ({ default: module.AboutPage })),
+);
+const PrivacyPage = lazy(() =>
+  import('@/pages/ProductInfoPage').then((module) => ({ default: module.PrivacyPage })),
+);
+const SecurityPage = lazy(() =>
+  import('@/pages/ProductInfoPage').then((module) => ({ default: module.SecurityPage })),
+);
 
 const RouteLoader = () => (
   <div className="grid min-h-screen grid-cols-1 gap-4 p-4 lg:grid-cols-[320px_1fr]">
@@ -48,6 +57,9 @@ export const AppRouter = () => (
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/download" element={<DownloadPage />} />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/security" element={<SecurityPage />} />
       <Route
         path="/login"
         element={
