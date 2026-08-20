@@ -23,6 +23,9 @@ const SettingsPage = lazy(() =>
 const PeoplePage = lazy(() =>
   import('@/pages/PeoplePage').then((module) => ({ default: module.PeoplePage })),
 );
+const CallsPage = lazy(() =>
+  import('@/pages/CallsPage').then((module) => ({ default: module.CallsPage })),
+);
 const VerifyEmailPage = lazy(() =>
   import('@/pages/VerifyEmailPage').then((module) => ({ default: module.VerifyEmailPage })),
 );
@@ -83,6 +86,14 @@ export const AppRouter = () => (
         element={
           <ProtectedRoute>
             <PeoplePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/calls"
+        element={
+          <ProtectedRoute>
+            <CallsPage />
           </ProtectedRoute>
         }
       />

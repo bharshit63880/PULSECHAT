@@ -4,12 +4,18 @@ import type {
   MessageSearchResultDto,
   PublishedKeyBundleDto,
 } from '@chat-app/shared';
+import type { SecureMessageView } from '@/features/messages/use-secure-messages';
 import type { ReactNode } from 'react';
 
 import {
   Check,
+  CheckCircle2,
+  ClipboardCheck,
   ChevronDown,
   Copy,
+  Gavel,
+  Image,
+  Paperclip,
   PencilLine,
   Search,
   ShieldCheck,
@@ -19,6 +25,7 @@ import {
   X,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { Avatar } from '@/components/common/Avatar';
@@ -26,6 +33,7 @@ import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { searchLocalMessages } from '@/features/messages/search';
 import { messagesApi } from '@/features/messages/api';
+import { contextApi } from '@/features/context/api';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 
 const InfoRow = ({
@@ -158,6 +166,7 @@ type ChatInfoPanelProps = {
   onAddGroupMember?: (userId: string) => Promise<void> | void;
   onRemoveGroupMember?: (userId: string) => Promise<void> | void;
   isUpdatingGroupMembers?: boolean;
+  messages?: SecureMessageView[];
   onClose: () => void;
 };
 
@@ -191,6 +200,7 @@ export const ChatInfoPanel = ({
   onAddGroupMember,
   onRemoveGroupMember,
   isUpdatingGroupMembers,
+  messages = [],
   onClose,
 }: ChatInfoPanelProps) => {
   const otherUser = getOtherParticipant(chat, currentUser.id);
@@ -203,6 +213,44 @@ export const ChatInfoPanel = ({
   const [isSafetySheetOpen, setIsSafetySheetOpen] = useState(false);
   const [isEditingGroupName, setIsEditingGroupName] = useState(false);
   const [groupNameDraft, setGroupNameDraft] = useState(chat.name ?? '');
+  const [taskDraft, setTaskDraft] = useState('');
+  const [decisionDraft, setDecisionDraft] = useState('');
+  const queryClient = useQueryClient();
+  const contextQuery = useQuery({
+    queryKey: ['conversation-context', chat.id],
+    queryFn: () => contextApi.list(chat.id),
+    enabled: chat.isGroupChat,
+  });
+  const refreshContext = () =>
+    queryClient.invalidateQueries({ queryKey: ['conversation-context', chat.id] });
+  const createTaskMutation = useMutation({
+    mutationFn: (content: string) => contextApi.createTask(chat.id, { content }),
+    onSuccess: () => {
+      setTaskDraft('');
+      void refreshContext();
+    },
+    onError: () => toast.error('Unable to add task right now'),
+  });
+  const updateTaskMutation = useMutation({
+    mutationFn: ({ taskId, status }: { taskId: string; status: 'open' | 'completed' }) =>
+      contextApi.updateTask(chat.id, taskId, { status }),
+    onSuccess: refreshContext,
+    onError: () => toast.error('Unable to update task right now'),
+  });
+  const createDecisionMutation = useMutation({
+    mutationFn: (content: string) => contextApi.createDecision(chat.id, { content }),
+    onSuccess: () => {
+      setDecisionDraft('');
+      void refreshContext();
+    },
+    onError: () => toast.error('Unable to add decision right now'),
+  });
+  const updateDecisionMutation = useMutation({
+    mutationFn: ({ decisionId, status }: { decisionId: string; status: 'proposed' | 'final' }) =>
+      contextApi.updateDecision(chat.id, decisionId, status),
+    onSuccess: refreshContext,
+    onError: () => toast.error('Unable to update decision right now'),
+  });
   const debouncedSearch = useDebouncedValue(search.trim(), 240);
   const canManageGroup = chat.isGroupChat && chat.admins.includes(currentUser.id);
   const availableUsers = directoryUsers.filter(
@@ -213,6 +261,14 @@ export const ChatInfoPanel = ({
   const safetySeed =
     verification?.combinedFingerprint ??
     `${localFingerprint ?? 'local'}:${primaryDevice?.fingerprint ?? 'peer'}`;
+  const attachments = useMemo(
+    () =>
+      messages
+        .filter((message) => message.attachment)
+        .slice(-12)
+        .reverse(),
+    [messages],
+  );
 
   useEffect(() => {
     setGroupNameDraft(chat.name ?? '');
@@ -600,6 +656,178 @@ export const ChatInfoPanel = ({
                 </Button>
               ))}
             </div>
+          </SectionCard>
+
+          <SectionCard
+            icon={<Paperclip className="h-5 w-5 text-accent" />}
+            title="Shared files"
+            subtitle="Encrypted attachments shared in this conversation."
+            defaultOpen={false}
+          >
+            {attachments.length > 0 ? (
+              <div className="space-y-2">
+                {attachments.map((message) => {
+                  const attachment = message.attachment!;
+                  const isImage =
+                    message.type === 'image' || attachment.mimeType.startsWith('image/');
+
+                  return (
+                    <div
+                      key={message.id}
+                      className="flex min-w-0 items-center gap-2.5 rounded-xl border border-line/80 bg-card-muted/60 px-3 py-2.5"
+                    >
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-accent-soft text-accent">
+                        {isImage ? (
+                          <Image className="h-4 w-4" />
+                        ) : (
+                          <Paperclip className="h-4 w-4" />
+                        )}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-ink">
+                          {attachment.fileName}
+                        </p>
+                        <p className="mt-0.5 text-[11px] text-muted">
+                          {Math.max(1, Math.ceil(attachment.size / 1024))} KB · encrypted
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="rounded-xl border border-line/80 bg-card-muted/60 px-3 py-2.5 text-xs leading-5 text-muted">
+                Files and media shared here will appear in this compact list.
+              </p>
+            )}
+          </SectionCard>
+
+          <SectionCard
+            icon={<ClipboardCheck className="h-5 w-5 text-accent" />}
+            title="Tasks"
+            subtitle={
+              chat.isGroupChat
+                ? 'Keep shared follow-ups visible in this group.'
+                : 'Private task text stays encrypted on participating devices.'
+            }
+            defaultOpen={false}
+          >
+            {chat.isGroupChat ? (
+              <div className="space-y-2.5">
+                <div className="flex gap-2">
+                  <Input
+                    value={taskDraft}
+                    onChange={(event) => setTaskDraft(event.target.value)}
+                    maxLength={500}
+                    placeholder="Add a shared task"
+                  />
+                  <Button
+                    className="shrink-0 px-3"
+                    disabled={!taskDraft.trim() || createTaskMutation.isPending}
+                    onClick={() => createTaskMutation.mutate(taskDraft.trim())}
+                  >
+                    Add
+                  </Button>
+                </div>
+                {contextQuery.isLoading ? (
+                  <p className="text-xs text-muted">Loading tasks...</p>
+                ) : null}
+                {contextQuery.data?.tasks.map((task) => (
+                  <div
+                    key={task.id}
+                    className="flex items-start gap-2 rounded-xl border border-line/80 bg-card-muted/60 px-3 py-2.5"
+                  >
+                    <button
+                      type="button"
+                      className="mt-0.5 shrink-0 text-accent"
+                      onClick={() =>
+                        updateTaskMutation.mutate({
+                          taskId: task.id,
+                          status: task.status === 'open' ? 'completed' : 'open',
+                        })
+                      }
+                      aria-label={task.status === 'open' ? 'Complete task' : 'Reopen task'}
+                    >
+                      <CheckCircle2
+                        className={`h-4 w-4 ${task.status === 'completed' ? 'fill-accent text-white' : ''}`}
+                      />
+                    </button>
+                    <p
+                      className={`min-w-0 flex-1 text-sm leading-5 ${task.status === 'completed' ? 'text-muted line-through' : 'text-ink'}`}
+                    >
+                      {task.content}
+                    </p>
+                  </div>
+                ))}
+                {!contextQuery.isLoading && contextQuery.data?.tasks.length === 0 ? (
+                  <p className="text-xs text-muted">No shared tasks yet.</p>
+                ) : null}
+              </div>
+            ) : (
+              <p className="rounded-xl border border-line/80 bg-card-muted/60 px-3 py-2.5 text-xs leading-5 text-muted">
+                Direct-chat task creation will be enabled when encrypted context composition is
+                available on this device. No task text is sent to the server in plaintext.
+              </p>
+            )}
+          </SectionCard>
+
+          <SectionCard
+            icon={<Gavel className="h-5 w-5 text-accent" />}
+            title="Decisions"
+            subtitle={
+              chat.isGroupChat
+                ? 'Capture what the group has agreed.'
+                : 'Private decisions are encrypted before storage.'
+            }
+            defaultOpen={false}
+          >
+            {chat.isGroupChat ? (
+              <div className="space-y-2.5">
+                <div className="flex gap-2">
+                  <Input
+                    value={decisionDraft}
+                    onChange={(event) => setDecisionDraft(event.target.value)}
+                    maxLength={1000}
+                    placeholder="Record a decision"
+                  />
+                  <Button
+                    className="shrink-0 px-3"
+                    disabled={!decisionDraft.trim() || createDecisionMutation.isPending}
+                    onClick={() => createDecisionMutation.mutate(decisionDraft.trim())}
+                  >
+                    Add
+                  </Button>
+                </div>
+                {contextQuery.data?.decisions.map((decision) => (
+                  <div
+                    key={decision.id}
+                    className="flex items-start gap-2 rounded-xl border border-line/80 bg-card-muted/60 px-3 py-2.5"
+                  >
+                    <p className="min-w-0 flex-1 text-sm leading-5 text-ink">{decision.content}</p>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateDecisionMutation.mutate({
+                          decisionId: decision.id,
+                          status: decision.status === 'final' ? 'proposed' : 'final',
+                        })
+                      }
+                      className="shrink-0 rounded-full border border-line px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-muted hover:border-accent/40 hover:text-accent"
+                    >
+                      {decision.status === 'final' ? 'Final' : 'Proposed'}
+                    </button>
+                  </div>
+                ))}
+                {!contextQuery.isLoading && contextQuery.data?.decisions.length === 0 ? (
+                  <p className="text-xs text-muted">No decisions recorded yet.</p>
+                ) : null}
+              </div>
+            ) : (
+              <p className="rounded-xl border border-line/80 bg-card-muted/60 px-3 py-2.5 text-xs leading-5 text-muted">
+                Encrypted decision composition is intentionally not available until the client can
+                encrypt and decrypt these records locally.
+              </p>
+            )}
           </SectionCard>
 
           <SectionCard

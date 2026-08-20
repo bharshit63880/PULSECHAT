@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
-import type { AnyZodObject, ZodType } from 'zod';
+import type { ZodType } from 'zod';
 
 type ValidationTarget = 'body' | 'query' | 'params';
 
@@ -12,7 +12,7 @@ export const validateRequest =
   };
 
 export const validateMultiRequest =
-  (schemas: Partial<Record<ValidationTarget, AnyZodObject>>) =>
+  (schemas: Partial<Record<ValidationTarget, ZodType>>) =>
   (request: Request, _response: Response, next: NextFunction) => {
     if (schemas.body) {
       request.body = schemas.body.parse(request.body);
