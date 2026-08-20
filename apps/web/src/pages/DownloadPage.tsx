@@ -2,7 +2,7 @@ import { ArrowLeft, ArrowRight, Download, Smartphone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const ANDROID_APK_URL =
-  'https://github.com/bharshit63880/PULSECHAT/releases/download/android-v1.0.0/PulseChat-Android-v1.0.0.apk';
+  'https://github.com/bharshit63880/PULSECHAT/releases/download/android-preview-2/PulseChat-Android-preview-2.apk';
 
 export const DownloadPage = () => (
   <main className="min-h-screen overflow-hidden bg-[#070712] px-5 py-6 text-[#f4f1ff] sm:px-8 sm:py-9">
@@ -36,13 +36,13 @@ export const DownloadPage = () => (
         <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-4">
           <a
             href={ANDROID_APK_URL}
-            download="PulseChat-Android-v1.0.0.apk"
+            download="PulseChat-Android-preview-2.apk"
             className="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 px-5 py-3 text-base font-semibold shadow-[0_16px_36px_rgba(130,73,255,.34)] transition hover:brightness-110"
           >
             Download Android APK <Download className="h-5 w-5" />
           </a>
           <span className="inline-flex items-center gap-2 text-sm text-violet-100/55">
-            <Smartphone className="h-4 w-4" /> Android preview · v1.0.0 (build 1)
+            <Smartphone className="h-4 w-4" /> Android preview · build 2
           </span>
         </div>
       </div>
