@@ -72,11 +72,17 @@ export const LandingPage = () => (
 
     <section className="safe-px relative isolate mx-auto min-h-[min(820px,calc(100vh-76px))] max-w-[1440px] py-16 sm:py-24">
       <img
+        src="/visuals/pulsechat-orbits-hero.png"
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-20 h-full w-full object-cover object-center opacity-40"
+      />
+      <img
         src="/visuals/pulsechat-mobile-showcase.png"
         alt="PulseChat mobile conversations, media, and calling preview"
-        className="pointer-events-none absolute right-[-24rem] top-[8%] -z-10 w-[760px] max-w-none opacity-45 sm:right-[-18rem] sm:w-[880px] lg:right-[-7rem] lg:top-[5%] lg:w-[980px] lg:opacity-100"
+        className="pointer-events-none absolute right-[-20rem] top-[12%] -z-10 w-[680px] max-w-none opacity-45 sm:right-[-13rem] sm:w-[760px] lg:right-8 lg:top-[9%] lg:w-[820px] lg:opacity-100 xl:right-12"
       />
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(90deg,#070712_0%,rgba(7,7,18,.97)_38%,rgba(7,7,18,.46)_72%,rgba(7,7,18,.14)_100%)]" />
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(90deg,#070712_0%,rgba(7,7,18,.94)_38%,rgba(7,7,18,.3)_72%,rgba(7,7,18,.08)_100%)]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-t from-[#070712] to-transparent" />
       <div className="max-w-3xl">
         <p className="mb-7 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.3em] text-violet-300">
