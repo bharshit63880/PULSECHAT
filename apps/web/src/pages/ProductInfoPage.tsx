@@ -36,6 +36,11 @@ const ProductInfoPage = ({ eyebrow, title, summary, icon, sections }: ProductInf
         <p className="mt-7 text-xs font-bold uppercase tracking-[0.28em] text-violet-300">
           {eyebrow}
         </p>
+        <img
+          src="/visuals/pulsechat-mobile-showcase.png"
+          alt="PulseChat mobile app preview"
+          className="mt-8 w-full max-w-[340px] object-contain object-right drop-shadow-[0_24px_45px_rgba(74,42,198,.3)]"
+        />
       </div>
       <div>
         <h1 className="max-w-4xl text-balance text-5xl font-medium leading-[0.95] tracking-[-0.07em] sm:text-7xl">
