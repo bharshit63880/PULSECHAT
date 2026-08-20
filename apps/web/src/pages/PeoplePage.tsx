@@ -77,7 +77,7 @@ export const PeoplePage = () => {
       <main className="mx-auto max-w-5xl overflow-hidden rounded-[32px] glass-panel">
         <header className="flex flex-col gap-5 border-b border-line/80 px-5 py-5 sm:px-7 sm:py-6">
           <div className="flex items-center gap-3">
-            <Link to="/">
+            <Link to="/app">
               <Button
                 variant="ghost"
                 className="h-11 w-11 rounded-2xl p-0"

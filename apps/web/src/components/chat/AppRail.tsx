@@ -45,7 +45,7 @@ export const AppRail = ({ currentUser }: { currentUser: AuthUser }) => {
 
   return (
     <nav className="hidden h-full min-w-[76px] flex-col items-center overflow-hidden border-r border-line/75 bg-bg-elevated/65 px-3 py-5 lg:flex">
-      <Link to="/" aria-label="PulseChat conversations" className="mb-9">
+      <Link to="/app" aria-label="PulseChat conversations" className="mb-9">
         <img
           src="/pulsechat-metal-mark.svg"
           alt="PulseChat"
@@ -54,7 +54,7 @@ export const AppRail = ({ currentUser }: { currentUser: AuthUser }) => {
       </Link>
 
       <div className="flex flex-col gap-3">
-        <RailLink to="/" label="Chats" active={location.pathname === '/'}>
+        <RailLink to="/app" label="Chats" active={location.pathname === '/app'}>
           <MessageCircle className="h-5 w-5" />
         </RailLink>
         <RailLink to="/people" label="People" active={location.pathname === '/people'}>

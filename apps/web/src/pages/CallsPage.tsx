@@ -22,7 +22,7 @@ export const CallsPage = () => {
     <div className="safe-px safe-pt safe-pb min-h-screen">
       <main className="mx-auto max-w-3xl overflow-hidden rounded-[32px] glass-panel">
         <header className="flex items-center gap-3 border-b border-line/80 px-5 py-5 sm:px-7">
-          <Link to="/">
+          <Link to="/app">
             <Button
               variant="ghost"
               className="h-11 w-11 rounded-2xl p-0"
@@ -67,7 +67,7 @@ export const CallsPage = () => {
                   type="button"
                   onClick={() => {
                     setActiveChatId(call.chatId);
-                    navigate('/');
+                    navigate('/app');
                   }}
                   className="flex w-full items-center gap-3 px-1 py-4 text-left transition hover:bg-accent-soft/50"
                 >
