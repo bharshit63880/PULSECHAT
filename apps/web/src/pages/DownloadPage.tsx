@@ -1,6 +1,9 @@
 import { ArrowLeft, ArrowRight, Download, Smartphone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+const ANDROID_APK_URL =
+  'https://expo.dev/artifacts/eas/J7xQ1KOHGO2AHbnlk0DDkqMPQ8oPJEbFqkG5tOMrdRk.apk';
+
 export const DownloadPage = () => (
   <main className="min-h-screen overflow-hidden bg-[#070712] px-5 py-6 text-[#f4f1ff] sm:px-8 sm:py-9">
     <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_88%_18%,rgba(124,77,255,.28),transparent_25%),radial-gradient(circle_at_8%_80%,rgba(199,66,255,.16),transparent_28%)]" />
@@ -24,25 +27,21 @@ export const DownloadPage = () => (
           <span className="h-px w-8 bg-violet-300" /> PulseChat for Android
         </p>
         <h1 className="mt-7 max-w-3xl text-balance text-5xl font-medium leading-[0.95] tracking-[-0.07em] sm:text-7xl">
-          The mobile app is being prepared the right way.
+          PulseChat is ready to try on Android.
         </h1>
         <p className="mt-7 max-w-2xl text-lg leading-8 text-violet-100/65">
-          There is no APK download yet because a real signed Android artifact has not been
-          published. We will show a version, file size, checksum, and install link only when the
-          build can be verified.
+          Install the verified PulseChat Android preview build. It is intended for direct testing
+          while the Play Store release is prepared.
         </p>
         <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-4">
-          <Link
-            to="/app"
-            className="inline-flex items-center gap-3 text-base font-semibold transition hover:text-violet-200"
+          <a
+            href={ANDROID_APK_URL}
+            className="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 px-5 py-3 text-base font-semibold shadow-[0_16px_36px_rgba(130,73,255,.34)] transition hover:brightness-110"
           >
-            Use PulseChat on the web{' '}
-            <span className="grid h-10 w-10 place-items-center rounded-full bg-violet-500">
-              <ArrowRight className="h-5 w-5" />
-            </span>
-          </Link>
-          <span className="inline-flex items-center gap-2 text-sm text-violet-100/45">
-            <Download className="h-4 w-4" /> Download unlocks after signed release
+            Download Android APK <Download className="h-5 w-5" />
+          </a>
+          <span className="inline-flex items-center gap-2 text-sm text-violet-100/55">
+            <Smartphone className="h-4 w-4" /> Android preview · v1.0.0 (build 1)
           </span>
         </div>
       </div>
@@ -53,9 +52,12 @@ export const DownloadPage = () => (
             <Smartphone className="h-11 w-11" />
           </div>
           <p className="mt-8 text-xs font-bold uppercase tracking-[0.25em] text-violet-200">
-            Android preview
+            Android preview ready
           </p>
-          <p className="mt-3 text-2xl font-medium tracking-[-0.04em]">Release artifact pending</p>
+          <p className="mt-3 text-2xl font-medium tracking-[-0.04em]">Install the APK</p>
+          <p className="mt-3 text-sm text-violet-100/60">
+            Allow your browser to install this test build if Android asks.
+          </p>
         </div>
       </div>
     </section>
