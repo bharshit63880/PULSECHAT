@@ -36,6 +36,7 @@ export const DownloadPage = () => (
         <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-4">
           <a
             href={ANDROID_APK_URL}
+            download="PulseChat-Android-v1.0.0.apk"
             className="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 px-5 py-3 text-base font-semibold shadow-[0_16px_36px_rgba(130,73,255,.34)] transition hover:brightness-110"
           >
             Download Android APK <Download className="h-5 w-5" />
@@ -48,8 +49,12 @@ export const DownloadPage = () => (
       <div className="relative mx-auto grid aspect-[4/5] w-full max-w-sm place-items-center overflow-hidden rounded-[3rem] border border-white/[0.12] bg-[linear-gradient(145deg,#171443,#09091d_68%)] shadow-[0_30px_100px_rgba(0,0,0,.45)]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(160,124,255,.45),transparent_32%),radial-gradient(circle_at_72%_78%,rgba(255,139,186,.24),transparent_31%)]" />
         <div className="relative text-center">
-          <div className="mx-auto grid h-24 w-24 place-items-center rounded-[2rem] border border-white/15 bg-white/[0.07] text-violet-200 shadow-[0_18px_50px_rgba(124,77,255,.3)]">
-            <Smartphone className="h-11 w-11" />
+          <div className="mx-auto grid h-24 w-24 place-items-center rounded-[2rem] border border-white/15 bg-[#09091c]/80 p-4 shadow-[0_18px_50px_rgba(124,77,255,.3)]">
+            <img
+              src="/pulsechat-metal-mark.svg"
+              alt="PulseChat"
+              className="h-full w-full object-contain"
+            />
           </div>
           <p className="mt-8 text-xs font-bold uppercase tracking-[0.25em] text-violet-200">
             Android preview ready
