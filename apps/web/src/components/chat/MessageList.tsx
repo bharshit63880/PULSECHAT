@@ -39,16 +39,17 @@ const MessageRow = memo(
     localStatuses,
     peerPublicAgreementKey,
     onReact,
-    onRetry
+    onRetry,
   }: MessageRowProps) => {
     const own = message.sender.id === currentUserId;
     const showSenderName = chat.isGroupChat && !own;
     const seenByOthers = message.seenBy.some((receipt) => receipt.userId !== currentUserId);
-    const localStatus = message.clientMessageId ? localStatuses?.[message.clientMessageId] : undefined;
-    const directRecipient =
-      !chat.isGroupChat
-        ? chat.participants.find((participant) => participant.id !== currentUserId) ?? null
-        : null;
+    const localStatus = message.clientMessageId
+      ? localStatuses?.[message.clientMessageId]
+      : undefined;
+    const directRecipient = !chat.isGroupChat
+      ? (chat.participants.find((participant) => participant.id !== currentUserId) ?? null)
+      : null;
     const status =
       localStatus ??
       (!own
@@ -73,7 +74,7 @@ const MessageRow = memo(
         status={status}
       />
     );
-  }
+  },
 );
 
 MessageRow.displayName = 'MessageRow';
@@ -89,7 +90,7 @@ export const MessageList = ({
   localStatuses,
   peerPublicAgreementKey,
   onReact,
-  onRetry
+  onRetry,
 }: MessageListProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const topRef = useRef<HTMLDivElement | null>(null);
@@ -123,8 +124,8 @@ export const MessageList = ({
       },
       {
         root: container,
-        threshold: 0.2
-      }
+        threshold: 0.2,
+      },
     );
 
     observer.observe(sentinel);
@@ -149,7 +150,11 @@ export const MessageList = ({
       <div className="flex h-full items-center justify-center px-4 py-8">
         <EmptyState
           title="No messages yet"
-          description={chat.isGroupChat ? 'Start the conversation with your group.' : 'Send the first message to begin the chat.'}
+          description={
+            chat.isGroupChat
+              ? 'Start the conversation with your group.'
+              : 'Send the first message to begin the chat.'
+          }
         />
       </div>
     );
@@ -158,7 +163,7 @@ export const MessageList = ({
   return (
     <div
       ref={containerRef}
-      className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto overscroll-contain px-3 py-4 sm:px-4 lg:px-5"
+      className="flex h-full min-h-0 flex-col gap-2.5 overflow-y-auto overscroll-contain px-3 py-4 sm:px-4 lg:px-5"
       style={{ contentVisibility: 'auto' }}
     >
       <div ref={topRef} />

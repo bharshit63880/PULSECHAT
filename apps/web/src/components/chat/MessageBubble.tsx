@@ -111,7 +111,7 @@ const AttachmentPreview = ({
   return (
     <div
       className={cn(
-        'mb-1.5 flex max-w-[min(100%,23rem)] items-center gap-3 rounded-2xl border p-2.5 text-sm',
+        'mb-1.5 flex max-w-[min(100%,22rem)] items-center gap-2.5 rounded-2xl border p-2 text-sm',
         own ? 'border-white/15 bg-black/10' : 'border-line bg-card-muted/80 dark:bg-slate-900/55',
       )}
     >
@@ -201,7 +201,7 @@ export const MessageBubble = ({
   return (
     <div className={cn('flex px-1 py-1.5', own ? 'justify-end' : 'justify-start')}>
       <div
-        className={cn('group relative max-w-[min(76%,32rem)]', own ? 'items-end' : 'items-start')}
+        className={cn('group relative max-w-[min(72%,32rem)]', own ? 'items-end' : 'items-start')}
       >
         {onReact ? (
           <div
@@ -231,7 +231,7 @@ export const MessageBubble = ({
         ) : null}
         <div
           className={cn(
-            'relative rounded-2xl px-3.5 py-2.5 shadow-[0_6px_18px_rgba(15,23,42,0.08)] transition-all duration-150',
+            'relative rounded-2xl px-3 py-2 shadow-[0_6px_18px_rgba(15,23,42,0.08)] transition-all duration-150',
             isStickerMessage && 'bg-transparent px-0 py-0 shadow-none',
             !isStickerMessage &&
               own &&
