@@ -20,6 +20,12 @@
         "backgroundColor": "#060611"
       }
     },
-    "plugins": ["expo-secure-store"]
+    "plugins": ["expo-secure-store"],
+    "extra": {
+      "eas": {
+        "projectId": "78a2f49a-d5f8-40fc-b11f-07fad6aa79b6"
+      }
+    },
+    "owner": "harshit_236"
   }
 }
