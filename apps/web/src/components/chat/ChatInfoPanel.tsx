@@ -4,6 +4,7 @@ import type {
   MessageSearchResultDto,
   PublishedKeyBundleDto,
 } from '@chat-app/shared';
+import type { SecureMessageView } from '@/features/messages/use-secure-messages';
 import type { ReactNode } from 'react';
 
 import {
@@ -13,6 +14,8 @@ import {
   ChevronDown,
   Copy,
   Gavel,
+  Image,
+  Paperclip,
   PencilLine,
   Search,
   ShieldCheck,
@@ -163,6 +166,7 @@ type ChatInfoPanelProps = {
   onAddGroupMember?: (userId: string) => Promise<void> | void;
   onRemoveGroupMember?: (userId: string) => Promise<void> | void;
   isUpdatingGroupMembers?: boolean;
+  messages?: SecureMessageView[];
   onClose: () => void;
 };
 
@@ -196,6 +200,7 @@ export const ChatInfoPanel = ({
   onAddGroupMember,
   onRemoveGroupMember,
   isUpdatingGroupMembers,
+  messages = [],
   onClose,
 }: ChatInfoPanelProps) => {
   const otherUser = getOtherParticipant(chat, currentUser.id);
@@ -256,6 +261,14 @@ export const ChatInfoPanel = ({
   const safetySeed =
     verification?.combinedFingerprint ??
     `${localFingerprint ?? 'local'}:${primaryDevice?.fingerprint ?? 'peer'}`;
+  const attachments = useMemo(
+    () =>
+      messages
+        .filter((message) => message.attachment)
+        .slice(-12)
+        .reverse(),
+    [messages],
+  );
 
   useEffect(() => {
     setGroupNameDraft(chat.name ?? '');
@@ -643,6 +656,50 @@ export const ChatInfoPanel = ({
                 </Button>
               ))}
             </div>
+          </SectionCard>
+
+          <SectionCard
+            icon={<Paperclip className="h-5 w-5 text-accent" />}
+            title="Shared files"
+            subtitle="Encrypted attachments shared in this conversation."
+            defaultOpen={false}
+          >
+            {attachments.length > 0 ? (
+              <div className="space-y-2">
+                {attachments.map((message) => {
+                  const attachment = message.attachment!;
+                  const isImage =
+                    message.type === 'image' || attachment.mimeType.startsWith('image/');
+
+                  return (
+                    <div
+                      key={message.id}
+                      className="flex min-w-0 items-center gap-2.5 rounded-xl border border-line/80 bg-card-muted/60 px-3 py-2.5"
+                    >
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-accent-soft text-accent">
+                        {isImage ? (
+                          <Image className="h-4 w-4" />
+                        ) : (
+                          <Paperclip className="h-4 w-4" />
+                        )}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-ink">
+                          {attachment.fileName}
+                        </p>
+                        <p className="mt-0.5 text-[11px] text-muted">
+                          {Math.max(1, Math.ceil(attachment.size / 1024))} KB · encrypted
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="rounded-xl border border-line/80 bg-card-muted/60 px-3 py-2.5 text-xs leading-5 text-muted">
+                Files and media shared here will appear in this compact list.
+              </p>
+            )}
           </SectionCard>
 
           <SectionCard

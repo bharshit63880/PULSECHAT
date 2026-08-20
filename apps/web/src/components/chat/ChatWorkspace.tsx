@@ -723,6 +723,7 @@ export const ChatWorkspace = () => {
                   }
                 : undefined
             }
+            messages={secureMessages}
             isUpdatingGroupMembers={
               addGroupMemberMutation.isPending || removeGroupMemberMutation.isPending
             }
