@@ -9,7 +9,7 @@ export const deviceRegistrationSchema = z.object({
   appVersion: z.string().trim().min(1).max(20).optional().nullable(),
   publicIdentityKey: publicKeySchema,
   publicAgreementKey: publicKeySchema,
-  fingerprint: fingerprintSchema
+  fingerprint: fingerprintSchema,
 });
 
 export const registerSchema = z.object({
@@ -22,21 +22,35 @@ export const registerSchema = z.object({
     .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores'),
   email: z.string().trim().email(),
   password: z.string().min(8).max(72),
-  device: deviceRegistrationSchema
+  device: deviceRegistrationSchema,
 });
 
 export const loginSchema = z.object({
   email: z.string().trim().email(),
   password: z.string().min(8).max(72),
-  device: deviceRegistrationSchema
+  device: deviceRegistrationSchema,
+});
+
+export const googleLoginSchema = z.object({
+  credential: z.string().trim().min(20).max(12_000),
+  device: deviceRegistrationSchema,
+});
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().email(),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().trim().min(24).max(512),
+  password: z.string().min(8).max(72),
 });
 
 export const verifyEmailSchema = z.object({
-  token: z.string().trim().min(24).max(512)
+  token: z.string().trim().min(24).max(512),
 });
 
 export const resendVerificationSchema = z.object({
-  email: z.string().trim().email().optional()
+  email: z.string().trim().email().optional(),
 });
 
 export const updateProfileSchema = z.object({

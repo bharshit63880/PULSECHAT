@@ -14,6 +14,7 @@ import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { Spinner } from '@/components/common/Spinner';
 import { authApi } from '@/features/auth/api';
+import { GoogleSignInButton } from '@/features/auth/components/GoogleSignInButton';
 import { registerFormSchema } from '@/features/auth/schema';
 import { ensureLocalDevice } from '@/features/encryption/crypto';
 import { useAuthStore } from '@/store/auth-store';
@@ -26,7 +27,7 @@ export const RegisterForm = () => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const readErrorMessage = (error: unknown) =>
     axios.isAxiosError<ApiErrorResponse>(error)
-      ? error.response?.data?.error?.message ?? 'Unable to create your account'
+      ? (error.response?.data?.error?.message ?? 'Unable to create your account')
       : 'Unable to create your account';
 
   const form = useForm<RegisterFormValues>({
@@ -35,8 +36,8 @@ export const RegisterForm = () => {
       name: '',
       username: '',
       email: '',
-      password: ''
-    }
+      password: '',
+    },
   });
 
   const registerMutation = useMutation({
@@ -48,12 +49,12 @@ export const RegisterForm = () => {
     },
     onError: (error) => {
       toast.error(readErrorMessage(error));
-    }
+    },
   });
 
   return (
     <form
-      className="w-full rounded-3xl border border-line bg-card p-6 shadow-float sm:p-8"
+      className="w-full p-1 sm:p-2"
       onSubmit={form.handleSubmit(async (values) => {
         const device = await ensureLocalDevice();
         registerMutation.mutate({
@@ -66,20 +67,24 @@ export const RegisterForm = () => {
             appVersion: device.appVersion,
             publicIdentityKey: device.publicIdentityKey,
             publicAgreementKey: device.publicAgreementKey,
-            fingerprint: device.fingerprint
-          }
+            fingerprint: device.fingerprint,
+          },
         });
       })}
     >
       <div className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">Get started</p>
         <div>
-          <h2 className="text-balance text-3xl font-semibold tracking-[-0.045em] sm:text-[2.1rem]">Create your account</h2>
-          <p className="mt-2 text-sm leading-6 text-muted">Set up your profile and start chatting in a minute.</p>
+          <h2 className="text-balance text-3xl font-semibold tracking-[-0.055em] sm:text-[2.2rem]">
+            Create account
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-muted">
+            Join PulseChat and stay close to your people.
+          </p>
         </div>
       </div>
 
-      <div className="mt-7 grid gap-4">
+      <div className="mt-7 grid gap-3.5">
         <div>
           <label className="mb-2 block text-sm font-semibold text-ink">Name</label>
           <div className="relative">
@@ -100,7 +105,12 @@ export const RegisterForm = () => {
           <label className="mb-2 block text-sm font-semibold text-ink">Email</label>
           <div className="relative">
             <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
-            <Input type="email" placeholder="Your email" className="pl-11" {...form.register('email')} />
+            <Input
+              type="email"
+              placeholder="Your email"
+              className="pl-11"
+              {...form.register('email')}
+            />
           </div>
           <p className="mt-1.5 text-xs text-rose-500">{form.formState.errors.email?.message}</p>
         </div>
@@ -127,14 +137,24 @@ export const RegisterForm = () => {
         </div>
       </div>
 
-      <div className="mt-7 space-y-4">
-        <Button type="submit" fullWidth disabled={registerMutation.isPending} className="min-h-12 rounded-xl">
+      <div className="mt-8 space-y-4">
+        <Button
+          type="submit"
+          fullWidth
+          disabled={registerMutation.isPending}
+          className="min-h-12 rounded-xl"
+        >
           {registerMutation.isPending ? <Spinner /> : 'Create account'}
         </Button>
 
-        <p className="text-center text-xs leading-5 text-muted">We will email you a quick verification link after signup.</p>
+        <div className="flex items-center gap-3 text-xs text-muted">
+          <span className="h-px flex-1 bg-line" />
+          or continue with
+          <span className="h-px flex-1 bg-line" />
+        </div>
+        <GoogleSignInButton />
 
-        <p className="text-sm text-muted">
+        <p className="text-center text-sm text-muted">
           Already have an account?{' '}
           <Link to="/login" className="font-semibold text-accent transition hover:text-accent/80">
             Sign in

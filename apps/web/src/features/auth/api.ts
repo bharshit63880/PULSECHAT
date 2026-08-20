@@ -3,7 +3,7 @@ import type {
   AuthResponseDto,
   DeviceRegistrationDto,
   EmailVerificationResultDto,
-  ResendVerificationResultDto
+  ResendVerificationResultDto,
 } from '@chat-app/shared';
 
 import { api } from '@/lib/axios';
@@ -19,6 +19,11 @@ type RegisterPayload = AuthPayload & {
   username: string;
 };
 
+type GoogleLoginPayload = {
+  credential: string;
+  device: DeviceRegistrationDto;
+};
+
 export const authApi = {
   async login(payload: AuthPayload) {
     const response = await api.post<ApiSuccessResponse<AuthResponseDto>>('/auth/login', payload);
@@ -30,13 +35,32 @@ export const authApi = {
     return response.data.data;
   },
 
+  async loginWithGoogle(payload: GoogleLoginPayload) {
+    const response = await api.post<ApiSuccessResponse<AuthResponseDto>>('/auth/google', payload);
+    return response.data.data;
+  },
+
+  async requestPasswordReset(email: string) {
+    await api.post('/auth/forgot-password', { email });
+  },
+
+  async resetPassword(token: string, password: string) {
+    await api.post('/auth/reset-password', { token, password });
+  },
+
   async verifyEmail(token: string) {
-    const response = await api.post<ApiSuccessResponse<EmailVerificationResultDto>>('/auth/verify-email', { token });
+    const response = await api.post<ApiSuccessResponse<EmailVerificationResultDto>>(
+      '/auth/verify-email',
+      { token },
+    );
     return response.data.data;
   },
 
   async resendVerification() {
-    const response = await api.post<ApiSuccessResponse<ResendVerificationResultDto>>('/auth/resend-verification', {});
+    const response = await api.post<ApiSuccessResponse<ResendVerificationResultDto>>(
+      '/auth/resend-verification',
+      {},
+    );
     return response.data.data;
   },
 
@@ -47,5 +71,5 @@ export const authApi = {
   async refresh() {
     const response = await api.post<ApiSuccessResponse<AuthResponseDto>>('/auth/refresh');
     return response.data.data;
-  }
+  },
 };

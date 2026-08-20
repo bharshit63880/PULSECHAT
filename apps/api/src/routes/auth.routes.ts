@@ -9,9 +9,42 @@ import { authValidation } from '../validations/auth.validation';
 
 export const authRouter = Router();
 
-authRouter.post('/register', authRateLimiter, validateRequest(authValidation.register), asyncHandler(authController.register));
-authRouter.post('/login', authRateLimiter, validateRequest(authValidation.login), asyncHandler(authController.login));
-authRouter.post('/verify-email', authRateLimiter, validateRequest(authValidation.verifyEmail), asyncHandler(authController.verifyEmail));
+authRouter.post(
+  '/register',
+  authRateLimiter,
+  validateRequest(authValidation.register),
+  asyncHandler(authController.register),
+);
+authRouter.post(
+  '/login',
+  authRateLimiter,
+  validateRequest(authValidation.login),
+  asyncHandler(authController.login),
+);
+authRouter.post(
+  '/google',
+  authRateLimiter,
+  validateRequest(authValidation.googleLogin),
+  asyncHandler(authController.googleLogin),
+);
+authRouter.post(
+  '/forgot-password',
+  authRateLimiter,
+  validateRequest(authValidation.forgotPassword),
+  asyncHandler(authController.forgotPassword),
+);
+authRouter.post(
+  '/reset-password',
+  authRateLimiter,
+  validateRequest(authValidation.resetPassword),
+  asyncHandler(authController.resetPassword),
+);
+authRouter.post(
+  '/verify-email',
+  authRateLimiter,
+  validateRequest(authValidation.verifyEmail),
+  asyncHandler(authController.verifyEmail),
+);
 authRouter.post('/refresh', authRateLimiter, asyncHandler(authController.refresh));
 authRouter.post('/logout', asyncHandler(authController.logout));
 authRouter.get('/me', authMiddleware, asyncHandler(authController.me));
@@ -20,5 +53,5 @@ authRouter.post(
   authMiddleware,
   authRateLimiter,
   validateRequest(authValidation.resendVerification),
-  asyncHandler(authController.resendVerification)
+  asyncHandler(authController.resendVerification),
 );

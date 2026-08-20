@@ -12,8 +12,8 @@ export const authController = {
       ...request.body,
       device: {
         ...request.body.device,
-        userAgent: request.body.device?.userAgent ?? request.get('user-agent') ?? null
-      }
+        userAgent: request.body.device?.userAgent ?? request.get('user-agent') ?? null,
+      },
     });
     response.cookie(REFRESH_TOKEN_COOKIE_NAME, result.refreshToken, refreshTokenCookieOptions);
     response.status(201).json(successResponse(result.auth, 'Account created successfully'));
@@ -24,8 +24,8 @@ export const authController = {
       ...request.body,
       device: {
         ...request.body.device,
-        userAgent: request.body.device?.userAgent ?? request.get('user-agent') ?? null
-      }
+        userAgent: request.body.device?.userAgent ?? request.get('user-agent') ?? null,
+      },
     });
     response.cookie(REFRESH_TOKEN_COOKIE_NAME, result.refreshToken, refreshTokenCookieOptions);
     response.json(
@@ -33,8 +33,34 @@ export const authController = {
         result.auth,
         result.auth.user.isEmailVerified
           ? 'Logged in successfully'
-          : 'Logged in successfully. Verify your email to unlock secure messaging.'
-      )
+          : 'Logged in successfully. Verify your email to unlock secure messaging.',
+      ),
+    );
+  },
+
+  async googleLogin(request: Request, response: Response) {
+    const result = await authService.loginWithGoogle({
+      credential: request.body.credential,
+      device: {
+        ...request.body.device,
+        userAgent: request.body.device?.userAgent ?? request.get('user-agent') ?? null,
+      },
+    });
+    response.cookie(REFRESH_TOKEN_COOKIE_NAME, result.refreshToken, refreshTokenCookieOptions);
+    response.json(successResponse(result.auth, 'Signed in with Google successfully'));
+  },
+
+  async forgotPassword(request: Request, response: Response) {
+    await authService.requestPasswordReset(request.body.email);
+    response.json(
+      successResponse({ sent: true }, 'If an account exists, a reset link has been sent.'),
+    );
+  },
+
+  async resetPassword(request: Request, response: Response) {
+    await authService.resetPassword(request.body.token, request.body.password);
+    response.json(
+      successResponse({ reset: true }, 'Password reset successfully. Please sign in again.'),
     );
   },
 
@@ -70,5 +96,5 @@ export const authController = {
   async me(request: Request, response: Response) {
     const user = await authService.getCurrentUser(request.user!.id);
     response.json(successResponse(user));
-  }
+  },
 };

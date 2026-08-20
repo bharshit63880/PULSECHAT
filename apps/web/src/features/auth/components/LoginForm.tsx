@@ -14,6 +14,7 @@ import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { Spinner } from '@/components/common/Spinner';
 import { authApi } from '@/features/auth/api';
+import { GoogleSignInButton } from '@/features/auth/components/GoogleSignInButton';
 import { ensureLocalDevice } from '@/features/encryption/crypto';
 import { loginFormSchema } from '@/features/auth/schema';
 import { useAuthStore } from '@/store/auth-store';
@@ -53,7 +54,7 @@ export const LoginForm = () => {
 
   return (
     <form
-      className="w-full rounded-3xl border border-line bg-card p-6 shadow-float sm:p-8"
+      className="w-full p-1 sm:p-2"
       onSubmit={form.handleSubmit(async (values) => {
         const device = await ensureLocalDevice();
         loginMutation.mutate({
@@ -74,16 +75,14 @@ export const LoginForm = () => {
       <div className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">Welcome back</p>
         <div>
-          <h2 className="text-balance text-3xl font-semibold tracking-[-0.045em] sm:text-[2.1rem]">
-            Sign in to Pulse Chat
+          <h2 className="text-balance text-3xl font-semibold tracking-[-0.055em] sm:text-[2.35rem]">
+            Welcome back
           </h2>
-          <p className="mt-2 text-sm leading-6 text-muted">
-            Pick up right where your conversations left off.
-          </p>
+          <p className="mt-2 text-sm leading-6 text-muted">Sign in to continue to PulseChat.</p>
         </div>
       </div>
 
-      <div className="mt-7 space-y-4">
+      <div className="mt-8 space-y-4">
         <div>
           <label className="mb-2 block text-sm font-semibold text-ink">Email</label>
           <div className="relative">
@@ -117,10 +116,18 @@ export const LoginForm = () => {
             </button>
           </div>
           <p className="mt-1.5 text-xs text-rose-500">{form.formState.errors.password?.message}</p>
+          <div className="mt-2 text-right">
+            <Link
+              to="/forgot-password"
+              className="text-sm font-medium text-violet-300 transition hover:text-fuchsia-300"
+            >
+              Forgot password?
+            </Link>
+          </div>
         </div>
       </div>
 
-      <div className="mt-7 space-y-4">
+      <div className="mt-8 space-y-4">
         <Button
           type="submit"
           fullWidth
@@ -130,11 +137,15 @@ export const LoginForm = () => {
           {loginMutation.isPending ? <Spinner /> : 'Sign in'}
         </Button>
 
-        <p className="text-center text-xs leading-5 text-muted">
-          Your chats are ready on this device.
-        </p>
+        <div className="flex items-center gap-3 text-xs text-muted">
+          <span className="h-px flex-1 bg-line" />
+          or continue with
+          <span className="h-px flex-1 bg-line" />
+        </div>
 
-        <p className="text-sm text-muted">
+        <GoogleSignInButton />
+
+        <p className="text-center text-sm text-muted">
           New here?{' '}
           <Link
             to="/register"
