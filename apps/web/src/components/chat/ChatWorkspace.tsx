@@ -32,7 +32,7 @@ import { useAuthBootstrap } from '@/hooks/use-auth-bootstrap';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useDeviceBootstrap } from '@/hooks/use-device-bootstrap';
 import { useSocketBridge } from '@/hooks/use-socket-bridge';
-import { useCalls } from '@/features/calls/CallProvider';
+import { useCalls } from '@/features/calls/use-calls';
 import { deliverOutboxItem } from '@/lib/outbox-delivery';
 import { disconnectSocket, getSocket } from '@/lib/socket';
 import { uploadService } from '@/services/upload.service';
