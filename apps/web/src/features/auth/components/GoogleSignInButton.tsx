@@ -62,12 +62,13 @@ export const GoogleSignInButton = () => {
       });
       buttonRef.current.innerHTML = '';
       window.google.accounts.id.renderButton(buttonRef.current, {
-        theme: 'outline',
+        theme: 'filled_black',
         size: 'large',
         type: 'standard',
         text: 'continue_with',
-        shape: 'pill',
-        width: 360,
+        shape: 'rectangular',
+        logo_alignment: 'left',
+        width: 400,
       });
     };
 
@@ -98,12 +99,12 @@ export const GoogleSignInButton = () => {
 
   return (
     <div
-      className="relative flex min-h-11 justify-center overflow-hidden rounded-full"
+      className="relative flex min-h-12 w-full items-center justify-center overflow-hidden rounded-xl border border-violet-200/20 bg-[#111126] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
       aria-live="polite"
     >
-      <div ref={buttonRef} className="min-h-11" />
+      <div ref={buttonRef} className="flex min-h-11 w-full justify-center" />
       {mutation.isPending ? (
-        <div className="absolute inset-0 grid place-items-center rounded-full bg-card/90">
+        <div className="absolute inset-0 grid place-items-center rounded-xl bg-[#111126]/95">
           <LoaderCircle className="h-4 w-4 animate-spin text-accent" />
         </div>
       ) : null}
