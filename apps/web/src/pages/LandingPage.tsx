@@ -1,61 +1,55 @@
 import {
+  ArrowDownRight,
   ArrowRight,
-  CheckCircle2,
+  Check,
   Download,
-  KeyRound,
+  LockKeyhole,
   MessageCircleMore,
   ShieldCheck,
   Smartphone,
-  Sparkles,
-  Webhook,
+  Waves,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 
-const highlights = [
-  {
-    icon: ShieldCheck,
-    title: 'Private direct chats',
-    description: 'Direct conversations use the app’s device-aware encrypted-message flow.',
-  },
-  {
-    icon: KeyRound,
-    title: 'Encrypted files',
-    description:
-      'Attachments are encrypted in the client before their encrypted binary is uploaded.',
-  },
-  {
-    icon: MessageCircleMore,
-    title: 'Conversations that stay useful',
-    description:
-      'Reactions, replies, search, media, and shared context remain close to the message.',
-  },
+const navItems = [
+  { label: 'What it is', href: '#story' },
+  { label: 'How it protects', href: '/security' },
+  { label: 'About', href: '/about' },
+  { label: 'Android', href: '/download' },
 ];
 
-const navItems = [
-  { label: 'Features', href: '#features' },
-  { label: 'Security', href: '/security' },
-  { label: 'About', href: '/about' },
-  { label: 'Contact', href: '#contact' },
-  { label: 'Download', href: '/download' },
+const principles = [
+  {
+    number: '01',
+    title: 'Say the important thing.',
+    body: 'Live messages, reactions, calls, files, and the context that makes a conversation useful.',
+    icon: MessageCircleMore,
+  },
+  {
+    number: '02',
+    title: 'Keep the boundary clear.',
+    body: 'Direct-message content and attachments are encrypted by the participating client before transport.',
+    icon: LockKeyhole,
+  },
+  {
+    number: '03',
+    title: 'Let the interface breathe.',
+    body: 'Quiet controls, responsive layouts, and only the details you need in the moment.',
+    icon: Waves,
+  },
 ];
 
 export const LandingPage = () => (
-  <main className="min-h-screen overflow-hidden bg-[#060611] text-[#f5f3ff]">
-    <div className="pointer-events-none fixed inset-0 -z-0 overflow-hidden" aria-hidden="true">
-      <div className="absolute left-[-12rem] top-[-11rem] h-[34rem] w-[34rem] rounded-full bg-violet-600/25 blur-[120px]" />
-      <div className="absolute right-[-12rem] top-[18rem] h-[32rem] w-[32rem] rounded-full bg-fuchsia-600/15 blur-[140px]" />
-      <div className="absolute bottom-[-20rem] left-1/3 h-[38rem] w-[38rem] rounded-full bg-indigo-600/20 blur-[150px]" />
-    </div>
-
-    <header className="safe-px sticky top-0 z-20 pt-4">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between rounded-2xl border border-white/10 bg-[#0d0c20]/80 px-4 py-3 shadow-[0_18px_60px_rgba(0,0,0,0.26)] backdrop-blur-xl sm:px-5">
+  <main className="min-h-screen overflow-hidden bg-[#070712] text-[#f4f1ff]">
+    <header className="relative z-20 border-b border-white/[0.08]">
+      <nav className="safe-px mx-auto flex h-[76px] max-w-[1440px] items-center justify-between">
         <Link to="/" className="flex items-center gap-3" aria-label="PulseChat home">
-          <img src="/pulsechat-metal-mark.svg" alt="" className="h-9 w-9 rounded-xl" />
-          <span className="font-semibold tracking-tight">PulseChat</span>
+          <img src="/pulsechat-metal-mark.svg" alt="" className="h-9 w-9" />
+          <span className="text-lg font-semibold tracking-[-0.04em]">PulseChat</span>
         </Link>
-        <div className="hidden items-center gap-5 text-sm text-violet-100/70 lg:flex">
+        <div className="hidden items-center gap-7 text-sm text-violet-100/65 md:flex">
           {navItems.map((item) =>
             item.href.startsWith('/') ? (
               <Link key={item.label} to={item.href} className="transition hover:text-white">
@@ -68,204 +62,136 @@ export const LandingPage = () => (
             ),
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <ThemeToggle />
           <Link
             to="/app"
-            className="inline-flex min-h-10 items-center justify-center rounded-xl bg-violet-500 px-4 text-sm font-semibold text-white transition hover:bg-violet-400"
+            className="hidden items-center gap-2 text-sm font-semibold text-white transition hover:text-violet-200 sm:inline-flex"
           >
-            Open web app
+            Open web app <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </nav>
     </header>
 
-    <section className="safe-px relative z-10 mx-auto grid max-w-7xl items-center gap-14 pb-20 pt-20 lg:grid-cols-[0.92fr_1.08fr] lg:pt-28">
-      <div>
-        <p className="mb-5 text-xs font-bold uppercase tracking-[0.28em] text-violet-300">
-          PulseChat
+    <section className="safe-px relative isolate mx-auto min-h-[min(820px,calc(100vh-76px))] max-w-[1440px] py-16 sm:py-24">
+      <img
+        src="/visuals/pulsechat-orbits-hero.png"
+        alt="Abstract light trails representing connected conversations"
+        className="pointer-events-none absolute inset-y-0 right-[-22rem] -z-10 h-full max-w-none object-cover object-right opacity-70 sm:right-[-15rem] lg:right-[-7rem] lg:w-[1020px] lg:opacity-100"
+      />
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(90deg,#070712_0%,rgba(7,7,18,.97)_38%,rgba(7,7,18,.46)_72%,rgba(7,7,18,.14)_100%)]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-t from-[#070712] to-transparent" />
+      <div className="max-w-3xl">
+        <p className="mb-7 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.3em] text-violet-300">
+          <span className="h-px w-8 bg-violet-300" /> Private by design
         </p>
-        <h1 className="max-w-xl text-balance text-5xl font-semibold leading-[0.98] tracking-[-0.065em] sm:text-6xl xl:text-7xl">
-          Private conversations,
-          <span className="block bg-gradient-to-r from-violet-300 via-fuchsia-300 to-pink-300 bg-clip-text text-transparent">
-            built differently.
+        <h1 className="max-w-3xl text-balance text-5xl font-semibold leading-[0.94] tracking-[-0.07em] sm:text-7xl lg:text-[clamp(5rem,8vw,8.5rem)]">
+          Talk freely.
+          <span className="block bg-gradient-to-r from-[#aa8bff] via-[#e7dfff] to-[#ff9fbb] bg-clip-text text-transparent">
+            Stay close.
           </span>
         </h1>
-        <p className="mt-7 max-w-xl text-lg leading-8 text-[#b7b4c8]">
-          A private real-time conversation workspace for messages, files, calls, memories, and
-          collaboration across web and Android.
+        <p className="mt-8 max-w-xl text-lg leading-8 text-violet-100/70 sm:text-xl">
+          PulseChat is a real-time space for the people and work you want to keep close—without
+          turning every conversation into noise.
         </p>
-        <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+        <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-4">
           <Link
             to="/app"
-            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-violet-500 px-5 font-semibold text-white shadow-[0_16px_42px_rgba(124,77,255,0.35)] transition hover:bg-violet-400"
+            className="group inline-flex items-center gap-3 text-base font-semibold text-white transition hover:text-violet-200"
           >
-            Open PulseChat Web <ArrowRight className="h-4 w-4" />
+            Start on the web{' '}
+            <span className="grid h-10 w-10 place-items-center rounded-full bg-violet-500 transition group-hover:scale-110 group-hover:bg-fuchsia-500">
+              <ArrowDownRight className="h-5 w-5" />
+            </span>
           </Link>
           <Link
             to="/download"
-            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.045] px-5 font-semibold text-violet-50 transition hover:bg-white/[0.09]"
+            className="inline-flex items-center gap-2 text-sm font-medium text-violet-100/70 transition hover:text-white"
           >
-            <Download className="h-4 w-4" /> Android build status
+            <Smartphone className="h-4 w-4 text-violet-300" /> Android release status
           </Link>
         </div>
-        <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-[#b7b4c8]">
-          <span className="inline-flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-emerald-300" /> No install required on desktop
-          </span>
-          <span className="inline-flex items-center gap-2">
-            <Smartphone className="h-4 w-4 text-violet-300" /> Android build in progress
-          </span>
-        </div>
-      </div>
-
-      <div className="relative mx-auto w-full max-w-2xl" aria-label="PulseChat workspace preview">
-        <div className="absolute -inset-8 rounded-[3rem] bg-[radial-gradient(circle_at_55%_35%,rgba(157,103,255,0.28),transparent_48%)] blur-2xl" />
-        <div className="relative overflow-hidden rounded-[28px] border border-violet-200/15 bg-[linear-gradient(145deg,rgba(21,21,50,0.98),rgba(8,8,27,0.98))] p-3 shadow-[0_38px_120px_rgba(0,0,0,0.44)] sm:p-4">
-          <div className="flex items-center justify-between border-b border-white/10 px-2 pb-3 text-xs text-[#b7b4c8]">
-            <span className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-400" /> End-to-end encrypted direct
-              chat
-            </span>
-            <span className="rounded-full bg-white/5 px-2 py-1">Live workspace</span>
-          </div>
-          <div className="grid min-h-[390px] grid-cols-[104px_1fr] gap-3 py-3 sm:grid-cols-[150px_1fr]">
-            <aside className="rounded-2xl border border-white/8 bg-black/15 p-2 sm:p-3">
-              <div className="mb-4 flex items-center gap-2 text-xs font-semibold text-violet-100">
-                <MessageCircleMore className="h-4 w-4 text-violet-300" /> Chats
-              </div>
-              {['Mira Kapoor', 'Design notes', 'Weekend plan'].map((chat, index) => (
-                <div
-                  key={chat}
-                  className={`mb-2 rounded-xl px-2 py-2 text-[10px] sm:text-xs ${index === 0 ? 'bg-violet-500/20 text-white ring-1 ring-violet-300/25' : 'text-[#b7b4c8]'}`}
-                >
-                  <p className="truncate font-semibold">{chat}</p>
-                  <p className="mt-1 truncate opacity-70">
-                    {index === 0 ? 'You: On it ✦' : 'Encrypted message'}
-                  </p>
-                </div>
-              ))}
-            </aside>
-            <div className="flex min-w-0 flex-col rounded-2xl border border-white/8 bg-[radial-gradient(circle_at_70%_5%,rgba(124,77,255,0.18),transparent_40%),#0c0c23] p-3 sm:p-4">
-              <div className="flex items-center gap-2 border-b border-white/10 pb-3">
-                <div className="grid h-8 w-8 place-items-center rounded-full bg-violet-300/20 text-xs font-bold text-violet-100">
-                  M
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">Mira Kapoor</p>
-                  <p className="text-[11px] text-emerald-300">Online now</p>
-                </div>
-              </div>
-              <div className="flex flex-1 flex-col justify-center gap-3 py-5 text-sm">
-                <div className="max-w-[78%] rounded-2xl rounded-bl-md border border-white/10 bg-white/[0.06] px-3 py-2 text-violet-50">
-                  The design file is ready for a final look.
-                </div>
-                <div className="ml-auto max-w-[78%] rounded-2xl rounded-br-md bg-gradient-to-br from-violet-500 to-fuchsia-500 px-3 py-2 text-white">
-                  I saved it with the context from today.
-                </div>
-                <div className="max-w-[78%] rounded-2xl rounded-bl-md border border-violet-300/15 bg-violet-400/10 p-3 text-xs text-violet-100">
-                  <span className="font-semibold">Encrypted file</span>
-                  <br />
-                  <span className="text-violet-200/70">launch-notes.pdf · ready to decrypt</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] p-2 text-xs text-[#77748b]">
-                <Sparkles className="h-4 w-4 text-violet-300" /> Write a secure message{' '}
-                <span className="ml-auto grid h-7 w-7 place-items-center rounded-lg bg-violet-500 text-white">
-                  <ArrowRight className="h-4 w-4" />
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <p className="mt-12 flex items-center gap-2 text-sm text-violet-100/45">
+          <Check className="h-4 w-4 text-emerald-300" /> Use it in your browser. No desktop install.
+        </p>
       </div>
     </section>
 
-    <section id="features" className="safe-px relative z-10 mx-auto max-w-7xl py-20">
-      <div className="max-w-2xl">
-        <p className="text-xs font-bold uppercase tracking-[0.24em] text-violet-300">
-          Built for real conversations
+    <section id="story" className="safe-px mx-auto max-w-[1440px] py-24 sm:py-32">
+      <div className="grid gap-8 border-t border-white/[0.1] pt-8 lg:grid-cols-[0.65fr_1.35fr] lg:gap-20">
+        <p className="text-xs font-bold uppercase tracking-[0.28em] text-violet-300">
+          A calmer place to talk
         </p>
-        <h2 className="mt-4 text-balance text-3xl font-semibold tracking-[-0.045em] sm:text-4xl">
-          The details stay close. The interface stays quiet.
+        <h2 className="max-w-4xl text-balance text-3xl font-medium leading-[1.05] tracking-[-0.055em] text-violet-50 sm:text-5xl">
+          The best messaging products feel less like software and more like a good conversation.
         </h2>
       </div>
-      <div className="mt-10 grid gap-4 lg:grid-cols-3">
-        {highlights.map(({ icon: Icon, title, description }) => (
-          <article key={title} className="rounded-2xl border border-white/10 bg-[#111129]/70 p-6">
-            <Icon className="h-6 w-6 text-violet-300" />
-            <h3 className="mt-5 text-lg font-semibold">{title}</h3>
-            <p className="mt-3 text-sm leading-6 text-[#b7b4c8]">{description}</p>
+      <div className="mt-20 divide-y divide-white/[0.1] border-y border-white/[0.1]">
+        {principles.map(({ number, title, body, icon: Icon }) => (
+          <article
+            key={number}
+            className="grid gap-5 py-8 sm:grid-cols-[70px_1fr_auto] sm:items-start sm:py-11"
+          >
+            <span className="font-mono text-sm text-violet-300">{number}</span>
+            <div>
+              <h3 className="text-2xl font-medium tracking-[-0.04em] sm:text-3xl">{title}</h3>
+              <p className="mt-3 max-w-2xl text-base leading-7 text-violet-100/60">{body}</p>
+            </div>
+            <Icon className="h-6 w-6 text-violet-300 sm:mt-1" />
           </article>
         ))}
       </div>
     </section>
 
-    <section id="security" className="safe-px relative z-10 mx-auto max-w-7xl py-16">
-      <div className="rounded-[28px] border border-violet-200/10 bg-[linear-gradient(120deg,rgba(124,77,255,0.18),rgba(17,17,41,0.9)_45%,rgba(199,66,255,0.12))] p-7 sm:p-10">
-        <div className="grid gap-8 lg:grid-cols-[0.75fr_1fr]">
-          <div>
-            <ShieldCheck className="h-8 w-8 text-violet-200" />
-            <p className="mt-5 text-xs font-bold uppercase tracking-[0.24em] text-violet-300">
-              Security, explained clearly
-            </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.045em]">
-              Privacy should be understandable.
-            </h2>
-          </div>
-          <div className="space-y-4 text-sm leading-7 text-[#b7b4c8]">
-            <p>
-              PulseChat protects direct conversations with its existing client-side encryption flow,
-              device-aware sessions, encrypted attachments, and session controls.
-            </p>
-            <p>
-              Group conversations are labelled according to their current security model. Product
-              claims never substitute for a security boundary.
-            </p>
-            <Link
-              to="/security"
-              className="inline-flex items-center gap-2 font-semibold text-violet-200 hover:text-white"
-            >
-              Read security details <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
+    <section className="safe-px mx-auto max-w-[1440px] pb-24 sm:pb-32">
+      <div className="grid gap-10 border-t border-white/[0.1] pt-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.28em] text-violet-300">
+            Security, without theatre
+          </p>
+          <h2 className="mt-5 max-w-3xl text-balance text-4xl font-medium leading-[1.02] tracking-[-0.06em] sm:text-6xl">
+            Privacy should be easy to understand.
+          </h2>
+        </div>
+        <div className="lg:pb-2">
+          <ShieldCheck className="mb-5 h-7 w-7 text-violet-300" />
+          <p className="max-w-md text-base leading-7 text-violet-100/65">
+            Direct-chat encryption, authenticated real-time transport, verified accounts, and
+            encrypted attachment storage are product boundaries—not slogans.
+          </p>
+          <Link
+            to="/security"
+            className="mt-7 inline-flex items-center gap-2 font-semibold text-violet-200 transition hover:text-white"
+          >
+            Read the security model <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </div>
     </section>
 
-    <section id="about" className="safe-px relative z-10 mx-auto max-w-7xl py-20">
-      <div className="max-w-3xl">
-        <p className="text-xs font-bold uppercase tracking-[0.24em] text-violet-300">
-          About PulseChat
-        </p>
-        <h2 className="mt-4 text-balance text-3xl font-semibold tracking-[-0.045em] sm:text-4xl">
-          Messages should feel fast. Privacy should be clear. Conversations should remain useful
-          after they are sent.
-        </h2>
-      </div>
-    </section>
-    <section id="contact" className="safe-px relative z-10 mx-auto max-w-7xl pb-20">
-      <div className="flex flex-col justify-between gap-6 border-t border-white/10 pt-8 sm:flex-row">
-        <div>
-          <p className="font-semibold">PulseChat</p>
-          <p className="mt-2 text-sm text-[#77748b]">Private conversations, built differently.</p>
-          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-violet-200">
-            <Link to="/privacy" className="hover:text-white">
-              Privacy
-            </Link>
-            <Link to="/security" className="hover:text-white">
-              Security
-            </Link>
-            <Link to="/about" className="hover:text-white">
-              About
-            </Link>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 text-sm text-[#b7b4c8]">
-          <Webhook className="h-4 w-4 text-violet-300" /> Contact support is coming with a verified
-          contact channel.
+    <footer className="safe-px border-t border-white/[0.08] py-8">
+      <div className="mx-auto flex max-w-[1440px] flex-col justify-between gap-5 text-sm text-violet-100/55 sm:flex-row sm:items-center">
+        <p>© {new Date().getFullYear()} PulseChat. Private conversations, built differently.</p>
+        <div className="flex flex-wrap gap-x-5 gap-y-3">
+          <Link to="/privacy" className="transition hover:text-white">
+            Privacy
+          </Link>
+          <Link to="/security" className="transition hover:text-white">
+            Security
+          </Link>
+          <Link to="/about" className="transition hover:text-white">
+            About
+          </Link>
+          <Link
+            to="/download"
+            className="inline-flex items-center gap-1 transition hover:text-white"
+          >
+            <Download className="h-3.5 w-3.5" /> Android
+          </Link>
         </div>
       </div>
-    </section>
+    </footer>
   </main>
 );

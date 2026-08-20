@@ -8,56 +8,58 @@ type ProductInfoPageProps = {
   title: string;
   summary: string;
   icon: ReactNode;
-  sections: Array<{
-    title: string;
-    body: string;
-  }>;
+  sections: Array<{ title: string; body: string }>;
 };
 
 const ProductInfoPage = ({ eyebrow, title, summary, icon, sections }: ProductInfoPageProps) => (
-  <main className="min-h-screen overflow-hidden bg-[#060611] px-4 py-5 text-[#f5f3ff] sm:px-6 sm:py-8">
-    <div className="pointer-events-none fixed inset-0 -z-0" aria-hidden="true">
-      <div className="absolute left-[-13rem] top-[-12rem] h-[34rem] w-[34rem] rounded-full bg-violet-600/20 blur-[130px]" />
-      <div className="absolute bottom-[-16rem] right-[-12rem] h-[36rem] w-[36rem] rounded-full bg-fuchsia-600/15 blur-[150px]" />
-    </div>
-    <section className="relative mx-auto max-w-4xl">
-      <nav className="flex items-center justify-between rounded-2xl border border-white/10 bg-[#0d0c20]/80 px-4 py-3 backdrop-blur-xl">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 text-sm font-medium text-violet-100 transition hover:text-white"
-        >
-          <ArrowLeft className="h-4 w-4" /> PulseChat
-        </Link>
-        <Link
-          to="/app"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-violet-200 transition hover:text-white"
-        >
-          Open web app <ArrowRight className="h-4 w-4" />
-        </Link>
-      </nav>
-
-      <article className="mt-8 rounded-[30px] border border-white/10 bg-[#111129]/85 p-6 shadow-[0_28px_100px_rgba(0,0,0,0.35)] sm:p-10">
-        <div className="grid h-14 w-14 place-items-center rounded-2xl bg-violet-400/15 text-violet-200">
+  <main className="min-h-screen overflow-hidden bg-[#070712] px-5 py-6 text-[#f4f1ff] sm:px-8 sm:py-9">
+    <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_5%_20%,rgba(124,77,255,.22),transparent_28%),radial-gradient(circle_at_94%_76%,rgba(199,66,255,.16),transparent_32%)]" />
+    <nav className="mx-auto flex max-w-[1240px] items-center justify-between border-b border-white/[0.1] pb-5">
+      <Link
+        to="/"
+        className="inline-flex items-center gap-2 text-sm font-semibold text-violet-100/80 transition hover:text-white"
+      >
+        <ArrowLeft className="h-4 w-4" /> PulseChat
+      </Link>
+      <Link
+        to="/app"
+        className="inline-flex items-center gap-2 text-sm text-violet-200 transition hover:text-white"
+      >
+        Open web app <ArrowRight className="h-4 w-4" />
+      </Link>
+    </nav>
+    <article className="mx-auto grid max-w-[1240px] gap-10 py-16 sm:py-24 lg:grid-cols-[0.55fr_1.45fr] lg:gap-20">
+      <div className="lg:sticky lg:top-10 lg:self-start">
+        <div className="grid h-14 w-14 place-items-center rounded-full border border-violet-200/20 bg-violet-400/10 text-violet-200">
           {icon}
         </div>
-        <p className="mt-8 text-xs font-bold uppercase tracking-[0.24em] text-violet-300">
+        <p className="mt-7 text-xs font-bold uppercase tracking-[0.28em] text-violet-300">
           {eyebrow}
         </p>
-        <h1 className="mt-4 max-w-3xl text-balance text-4xl font-semibold tracking-[-0.055em] sm:text-5xl">
+      </div>
+      <div>
+        <h1 className="max-w-4xl text-balance text-5xl font-medium leading-[0.95] tracking-[-0.07em] sm:text-7xl">
           {title}
         </h1>
-        <p className="mt-5 max-w-3xl text-lg leading-8 text-[#b7b4c8]">{summary}</p>
-
-        <div className="mt-10 space-y-6">
-          {sections.map((section) => (
-            <section key={section.title} className="border-t border-white/10 pt-6">
-              <h2 className="text-lg font-semibold text-violet-50">{section.title}</h2>
-              <p className="mt-2 max-w-3xl text-sm leading-7 text-[#b7b4c8]">{section.body}</p>
+        <p className="mt-8 max-w-3xl text-lg leading-8 text-violet-100/65 sm:text-xl">{summary}</p>
+        <div className="mt-16 divide-y divide-white/[0.1] border-y border-white/[0.1]">
+          {sections.map((section, index) => (
+            <section
+              key={section.title}
+              className="grid gap-4 py-8 sm:grid-cols-[52px_1fr] sm:py-10"
+            >
+              <span className="font-mono text-sm text-violet-300">0{index + 1}</span>
+              <div>
+                <h2 className="text-xl font-medium tracking-[-0.035em] text-violet-50">
+                  {section.title}
+                </h2>
+                <p className="mt-3 max-w-3xl leading-7 text-violet-100/60">{section.body}</p>
+              </div>
             </section>
           ))}
         </div>
-      </article>
-    </section>
+      </div>
+    </article>
   </main>
 );
 
@@ -83,7 +85,6 @@ export const AboutPage = () => (
     ]}
   />
 );
-
 export const PrivacyPage = () => (
   <ProductInfoPage
     eyebrow="Privacy"
@@ -110,7 +111,6 @@ export const PrivacyPage = () => (
     ]}
   />
 );
-
 export const SecurityPage = () => (
   <ProductInfoPage
     eyebrow="Security"
