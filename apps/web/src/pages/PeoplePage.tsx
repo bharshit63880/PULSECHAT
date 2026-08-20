@@ -65,7 +65,7 @@ export const PeoplePage = () => {
         ...(current ?? []).filter((item) => item.id !== chat.id),
       ]);
       setActiveChatId(chat.id);
-      navigate('/');
+      navigate('/app');
     },
     onError: () => toast.error('Unable to open a conversation right now'),
   });
