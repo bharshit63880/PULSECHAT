@@ -2,7 +2,7 @@ import { ArrowLeft, ArrowRight, Download, Smartphone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const ANDROID_APK_URL =
-  'https://expo.dev/artifacts/eas/J7xQ1KOHGO2AHbnlk0DDkqMPQ8oPJEbFqkG5tOMrdRk.apk';
+  'https://github.com/bharshit63880/PULSECHAT/releases/download/android-v1.0.0/PulseChat-Android-v1.0.0.apk';
 
 export const DownloadPage = () => (
   <main className="min-h-screen overflow-hidden bg-[#070712] px-5 py-6 text-[#f4f1ff] sm:px-8 sm:py-9">
