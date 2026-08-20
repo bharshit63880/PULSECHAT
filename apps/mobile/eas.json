@@ -10,6 +10,7 @@
     },
     "preview": {
       "distribution": "internal",
+      "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_API_URL": "https://pulsechat-1y8m.onrender.com/api/v1",
         "EXPO_PUBLIC_SOCKET_URL": "https://pulsechat-1y8m.onrender.com"
