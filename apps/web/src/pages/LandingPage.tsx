@@ -6,12 +6,9 @@ import {
   LockKeyhole,
   MessageCircleMore,
   ShieldCheck,
-  Smartphone,
   Waves,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-import { ThemeToggle } from '@/components/common/ThemeToggle';
 
 const navItems = [
   { label: 'What it is', href: '#story' },
@@ -63,7 +60,6 @@ export const LandingPage = () => (
           )}
         </div>
         <div className="flex items-center gap-3">
-          <ThemeToggle />
           <Link
             to="/app"
             className="hidden items-center gap-2 text-sm font-semibold text-white transition hover:text-violet-200 sm:inline-flex"
@@ -96,7 +92,7 @@ export const LandingPage = () => (
           PulseChat is a real-time space for the people and work you want to keep close—without
           turning every conversation into noise.
         </p>
-        <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-4">
+        <div className="mt-10 flex flex-wrap items-center gap-5">
           <Link
             to="/app"
             className="group inline-flex items-center gap-3 text-base font-semibold text-white transition hover:text-violet-200"
@@ -106,12 +102,13 @@ export const LandingPage = () => (
               <ArrowDownRight className="h-5 w-5" />
             </span>
           </Link>
-          <Link
-            to="/download"
-            className="inline-flex items-center gap-2 text-sm font-medium text-violet-100/70 transition hover:text-white"
+          <a
+            href="https://github.com/bharshit63880/PULSECHAT/releases/download/android-v1.0.0/PulseChat-Android-v1.0.0.apk"
+            download="PulseChat-Android-v1.0.0.apk"
+            className="inline-flex items-center gap-2 rounded-full border border-violet-300/30 bg-violet-400/[0.08] px-4 py-2.5 text-sm font-semibold text-violet-100 transition hover:border-violet-200/60 hover:bg-violet-400/[0.16] hover:text-white"
           >
-            <Smartphone className="h-4 w-4 text-violet-300" /> Android release status
-          </Link>
+            <Download className="h-4 w-4 text-violet-200" /> Download Android APK
+          </a>
         </div>
         <p className="mt-12 flex items-center gap-2 text-sm text-violet-100/45">
           <Check className="h-4 w-4 text-emerald-300" /> Use it in your browser. No desktop install.
