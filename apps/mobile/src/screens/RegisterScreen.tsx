@@ -25,10 +25,12 @@ type RegisterValues = {
   password: string;
 };
 
-export const RegisterScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Register'>) => {
+export const RegisterScreen = ({
+  navigation,
+}: NativeStackScreenProps<RootStackParamList, 'Register'>) => {
   const setSession = useAuthStore((state) => state.setSession);
   const { control, handleSubmit } = useForm<RegisterValues>({
-    defaultValues: { name: '', username: '', email: '', password: '' }
+    defaultValues: { name: '', username: '', email: '', password: '' },
   });
 
   const registerMutation = useMutation({
@@ -41,22 +43,70 @@ export const RegisterScreen = ({ navigation }: NativeStackScreenProps<RootStackP
       await authStorage.write(payload);
     },
     onError: (error) => {
-      Alert.alert('Registration failed', getApiErrorMessage(error, 'Unable to create the account right now'));
-    }
+      Alert.alert(
+        'Registration failed',
+        getApiErrorMessage(error, 'Unable to create the account right now'),
+      );
+    },
   });
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <LinearGradient colors={['#eefcf5', '#f7fbff']} style={styles.gradient}>
+      <LinearGradient colors={['#21194f', '#09091d', '#190d2c']} style={styles.gradient}>
         <SurfaceCard style={styles.card}>
           <Text style={styles.cardEyebrow}>SECURE SIGNUP</Text>
           <Text style={styles.cardHeading}>Create your mobile device session</Text>
           <View style={styles.form}>
-            <Controller control={control} name="name" render={({ field: { onChange, value } }) => <Field label="Name" value={value} onChangeText={onChange} />} />
-            <Controller control={control} name="username" render={({ field: { onChange, value } }) => <Field label="Username" value={value} onChangeText={onChange} autoCapitalize="none" />} />
-            <Controller control={control} name="email" render={({ field: { onChange, value } }) => <Field label="Email" value={value} onChangeText={onChange} autoCapitalize="none" keyboardType="email-address" />} />
-            <Controller control={control} name="password" render={({ field: { onChange, value } }) => <Field label="Password" value={value} onChangeText={onChange} secureTextEntry helperText="Device keys are generated locally before the first secure chat." />} />
-            <PrimaryButton label="Create account" onPress={handleSubmit((values) => registerMutation.mutate(values))} loading={registerMutation.isPending} />
+            <Controller
+              control={control}
+              name="name"
+              render={({ field: { onChange, value } }) => (
+                <Field label="Name" value={value} onChangeText={onChange} />
+              )}
+            />
+            <Controller
+              control={control}
+              name="username"
+              render={({ field: { onChange, value } }) => (
+                <Field
+                  label="Username"
+                  value={value}
+                  onChangeText={onChange}
+                  autoCapitalize="none"
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="email"
+              render={({ field: { onChange, value } }) => (
+                <Field
+                  label="Email"
+                  value={value}
+                  onChangeText={onChange}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="password"
+              render={({ field: { onChange, value } }) => (
+                <Field
+                  label="Password"
+                  value={value}
+                  onChangeText={onChange}
+                  secureTextEntry
+                  helperText="Device keys are generated locally before the first secure chat."
+                />
+              )}
+            />
+            <PrimaryButton
+              label="Create account"
+              onPress={handleSubmit((values) => registerMutation.mutate(values))}
+              loading={registerMutation.isPending}
+            />
           </View>
           <Pressable onPress={() => navigation.navigate('Login')}>
             <Text style={styles.switchText}>
@@ -77,5 +127,5 @@ const styles = StyleSheet.create({
   cardHeading: { color: palette.ink, fontSize: 32, lineHeight: 38, fontWeight: '800' },
   form: { gap: 14 },
   switchText: { textAlign: 'center', color: palette.muted, fontSize: 15, marginTop: 4 },
-  switchAccent: { color: palette.accent, fontWeight: '700' }
+  switchAccent: { color: palette.accent, fontWeight: '700' },
 });

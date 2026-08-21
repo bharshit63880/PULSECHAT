@@ -15,8 +15,11 @@ type ChatRowProps = {
 export const ChatRow = ({ chat, currentUserId, active, onPress }: ChatRowProps) => {
   const counterpart = chat.isGroupChat
     ? null
-    : chat.participants.find((participant) => participant.id !== currentUserId) ?? chat.participants[0];
-  const title = chat.isGroupChat ? chat.name ?? 'Untitled group' : counterpart?.name ?? 'Direct chat';
+    : (chat.participants.find((participant) => participant.id !== currentUserId) ??
+      chat.participants[0]);
+  const title = chat.isGroupChat
+    ? (chat.name ?? 'Untitled group')
+    : (counterpart?.name ?? 'Direct chat');
   const subtitle = chat.latestMessage
     ? chat.latestMessage.type === 'sticker'
       ? 'Sticker'
@@ -35,7 +38,12 @@ export const ChatRow = ({ chat, currentUserId, active, onPress }: ChatRowProps) 
           <Text numberOfLines={1} style={styles.title}>
             {title}
           </Text>
-          <Text style={styles.timestamp}>{new Date(chat.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+          <Text style={styles.timestamp}>
+            {new Date(chat.updatedAt).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </Text>
         </View>
         <View style={styles.bottomLine}>
           <Text numberOfLines={1} style={styles.subtitle}>
@@ -60,41 +68,41 @@ const styles = StyleSheet.create({
     borderRadius: radii.xl,
     borderWidth: 1,
     borderColor: 'transparent',
-    backgroundColor: '#ffffffcc'
+    backgroundColor: palette.surface,
   },
   rowActive: {
-    borderColor: '#a7f3d0',
-    backgroundColor: '#ecfdf5'
+    borderColor: palette.accent,
+    backgroundColor: palette.accentSoft,
   },
   content: {
     flex: 1,
-    gap: 6
+    gap: 6,
   },
   topLine: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 12
+    gap: 12,
   },
   bottomLine: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 12,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   title: {
     flex: 1,
     color: palette.ink,
     fontWeight: '700',
-    fontSize: 16
+    fontSize: 16,
   },
   subtitle: {
     flex: 1,
     color: palette.muted,
-    fontSize: 13
+    fontSize: 13,
   },
   timestamp: {
     color: palette.muted,
-    fontSize: 12
+    fontSize: 12,
   },
   badge: {
     minWidth: 24,
@@ -103,11 +111,11 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: palette.accent
+    backgroundColor: palette.accent,
   },
   badgeText: {
     color: '#fff',
     fontWeight: '700',
-    fontSize: 12
-  }
+    fontSize: 12,
+  },
 });

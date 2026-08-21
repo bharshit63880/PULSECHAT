@@ -7,7 +7,7 @@ import { RootNavigator } from '@/navigation/RootNavigator';
 
 const App = () => (
   <AppProviders>
-    <StatusBar style="dark" />
+    <StatusBar style="light" />
     <RootNavigator />
   </AppProviders>
 );

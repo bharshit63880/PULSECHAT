@@ -14,7 +14,6 @@
     "android": {
       "package": "com.pulsechat.app",
       "versionCode": 1,
-      "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/pulsechat-adaptive-icon.png",
         "backgroundColor": "#060611"

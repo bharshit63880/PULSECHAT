@@ -21,7 +21,12 @@ export const ThreadComposer = ({ value, onChange, onSend, disabled }: ThreadComp
       style={styles.input}
       editable={!disabled}
     />
-    <PrimaryButton label="Send" onPress={onSend} disabled={disabled || !value.trim()} style={styles.button} />
+    <PrimaryButton
+      label="Send"
+      onPress={onSend}
+      disabled={disabled || !value.trim()}
+      style={styles.button}
+    />
   </View>
 );
 
@@ -30,7 +35,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     alignItems: 'flex-end',
-    paddingTop: 12
+    paddingTop: 12,
   },
   input: {
     flex: 1,
@@ -39,13 +44,13 @@ const styles = StyleSheet.create({
     borderRadius: radii.xl,
     borderWidth: 1,
     borderColor: palette.line,
-    backgroundColor: '#ffffffde',
+    backgroundColor: palette.surface,
     paddingHorizontal: 16,
     paddingVertical: 14,
     color: palette.ink,
-    fontSize: 15
+    fontSize: 15,
   },
   button: {
-    minWidth: 96
-  }
+    minWidth: 96,
+  },
 });

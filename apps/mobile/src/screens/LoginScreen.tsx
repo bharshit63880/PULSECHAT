@@ -23,10 +23,12 @@ type LoginValues = {
   password: string;
 };
 
-export const LoginScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Login'>) => {
+export const LoginScreen = ({
+  navigation,
+}: NativeStackScreenProps<RootStackParamList, 'Login'>) => {
   const setSession = useAuthStore((state) => state.setSession);
   const { control, handleSubmit } = useForm<LoginValues>({
-    defaultValues: { email: '', password: '' }
+    defaultValues: { email: '', password: '' },
   });
 
   const loginMutation = useMutation({
@@ -40,15 +42,15 @@ export const LoginScreen = ({ navigation }: NativeStackScreenProps<RootStackPara
     },
     onError: (error) => {
       Alert.alert('Sign in failed', getApiErrorMessage(error, 'Unable to sign in right now'));
-    }
+    },
   });
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <LinearGradient colors={['#eafcf1', '#f7fbff']} style={styles.gradient}>
+      <LinearGradient colors={['#21194f', '#09091d', '#190d2c']} style={styles.gradient}>
         <View style={styles.hero}>
-          <Text style={styles.brand}>PULSE CHAT</Text>
-          <Text style={styles.heading}>Private conversations built for mobile teams.</Text>
+          <Text style={styles.brand}>PULSECHAT</Text>
+          <Text style={styles.heading}>Talk freely. Stay close.</Text>
           <Text style={styles.subheading}>
             Secure sessions, verified inboxes, realtime presence, and device-aware encrypted chat.
           </Text>
@@ -62,7 +64,13 @@ export const LoginScreen = ({ navigation }: NativeStackScreenProps<RootStackPara
               name="email"
               rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
-                <Field label="Email" value={value} onChangeText={onChange} autoCapitalize="none" keyboardType="email-address" />
+                <Field
+                  label="Email"
+                  value={value}
+                  onChangeText={onChange}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                />
               )}
             />
             <Controller
@@ -73,7 +81,11 @@ export const LoginScreen = ({ navigation }: NativeStackScreenProps<RootStackPara
                 <Field label="Password" value={value} onChangeText={onChange} secureTextEntry />
               )}
             />
-            <PrimaryButton label="Sign in" onPress={handleSubmit((values) => loginMutation.mutate(values))} loading={loginMutation.isPending} />
+            <PrimaryButton
+              label="Sign in"
+              onPress={handleSubmit((values) => loginMutation.mutate(values))}
+              loading={loginMutation.isPending}
+            />
           </View>
           <Pressable onPress={() => navigation.navigate('Register')}>
             <Text style={styles.switchText}>
@@ -90,7 +102,7 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: palette.background },
   gradient: { flex: 1, padding: 20, justifyContent: 'center', gap: 20 },
   hero: { gap: 12 },
-  brand: { color: '#0f766e', letterSpacing: 4, fontWeight: '700' },
+  brand: { color: '#b9a2ff', letterSpacing: 4, fontWeight: '700' },
   heading: { color: palette.ink, fontSize: 38, lineHeight: 44, fontWeight: '800' },
   subheading: { color: palette.muted, fontSize: 16, lineHeight: 24 },
   card: { gap: 18 },
@@ -98,5 +110,5 @@ const styles = StyleSheet.create({
   cardHeading: { color: palette.ink, fontSize: 30, lineHeight: 36, fontWeight: '800' },
   form: { gap: 14 },
   switchText: { textAlign: 'center', color: palette.muted, fontSize: 15, marginTop: 4 },
-  switchAccent: { color: palette.accent, fontWeight: '700' }
+  switchAccent: { color: palette.accent, fontWeight: '700' },
 });

@@ -27,20 +27,20 @@ export const Avatar = ({ name, online }: AvatarProps) => {
 
 const styles = StyleSheet.create({
   wrapper: {
-    position: 'relative'
+    position: 'relative',
   },
   circle: {
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#d6ead9',
+    backgroundColor: palette.accentSoft,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   initials: {
-    color: '#1f6d3a',
+    color: palette.ink,
     fontSize: 18,
-    fontWeight: '700'
+    fontWeight: '700',
   },
   onlineDot: {
     position: 'absolute',
@@ -51,6 +51,6 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     backgroundColor: palette.accent,
     borderWidth: 2,
-    borderColor: palette.surface
-  }
+    borderColor: palette.surface,
+  },
 });

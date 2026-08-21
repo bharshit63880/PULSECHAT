@@ -8,7 +8,7 @@ import { useAuthStore } from '@/store/auth-store';
 
 export const api = axios.create({
   baseURL: mobileEnv.apiUrl,
-  withCredentials: true
+  withCredentials: true,
 });
 
 api.interceptors.request.use((config) => {
@@ -30,10 +30,15 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export const getApiErrorMessage = (error: unknown, fallback: string) => {
-  const message = (error as { response?: { data?: ApiErrorResponse } })?.response?.data?.error?.message;
-  return typeof message === 'string' ? message : fallback;
+  const message = (error as { response?: { data?: ApiErrorResponse } })?.response?.data?.error
+    ?.message;
+  if (typeof message === 'string') {
+    return message;
+  }
+
+  return error instanceof Error && error.message ? error.message : fallback;
 };

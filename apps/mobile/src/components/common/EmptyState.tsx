@@ -24,17 +24,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#ffffffaa'
+    backgroundColor: palette.surface,
   },
   title: {
     color: palette.ink,
     fontSize: 18,
-    fontWeight: '700'
+    fontWeight: '700',
   },
   description: {
     color: palette.muted,
     fontSize: 14,
     lineHeight: 20,
-    textAlign: 'center'
-  }
+    textAlign: 'center',
+  },
 });
