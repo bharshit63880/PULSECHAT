@@ -109,8 +109,8 @@ export const LandingPage = () => (
             </span>
           </Link>
           <a
-            href="https://github.com/bharshit63880/PULSECHAT/releases/download/android-preview-3/PulseChat-Android-preview-3.apk"
-            download="PulseChat-Android-preview-3.apk"
+            href="https://github.com/bharshit63880/PULSECHAT/releases/download/android-preview-4/PulseChat-Android-preview-4.apk"
+            download="PulseChat-Android-preview-4.apk"
             className="inline-flex items-center gap-2 rounded-full border border-violet-300/30 bg-violet-400/[0.08] px-4 py-2.5 text-sm font-semibold text-violet-100 transition hover:border-violet-200/60 hover:bg-violet-400/[0.16] hover:text-white"
           >
             <Download className="h-4 w-4 text-violet-200" /> Download Android APK
