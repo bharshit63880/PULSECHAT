@@ -26,14 +26,18 @@ The project deliberately documents its security boundaries and current limitatio
 
 # 🎯 Why PulseChat?
 
-Modern messaging applications require more than sending messages between two users.
+Modern messaging applications require more than simply sending messages between two users.
 
 PulseChat brings together:
 
 - Real-time messaging
-- Presence and typing indicators
+- One-to-one conversations
+- Group conversations
+- Presence indicators
+- Typing indicators
 - Delivery and seen states
-- Reactions and unread counts
+- Message reactions
+- Unread counts
 - Optimistic message sending
 - Retryable offline outbox
 - Direct-message client-side encryption
@@ -44,9 +48,8 @@ PulseChat brings together:
 - Email verification
 - Disappearing messages
 - Local decrypted message search
-- Group messaging
-- WebSocket-based communication
 - Redis-backed real-time infrastructure
+- Shared TypeScript contracts
 
 The project is structured as a monorepo so that the web client, API, mobile scaffold, and shared contracts can evolve together.
 
@@ -55,6 +58,10 @@ The project is structured as a monorepo so that the web client, API, mobile scaf
 # ✨ Core Features
 
 ## 💬 Real-Time Messaging
+
+PulseChat supports normal messaging workflows while maintaining real-time communication between connected clients.
+
+### Supported
 
 - One-to-one conversations
 - Group conversations
@@ -66,26 +73,34 @@ The project is structured as a monorepo so that the web client, API, mobile scaf
 - Message reactions
 - Unread counts
 - Optimistic message sending
-- Retryable outbox
+- Retryable message outbox
 - Real-time notifications
+- Conversation updates
+
+Communication is handled through **Socket.IO**, while REST APIs are used for operations that do not require persistent socket communication.
 
 ---
 
-## 🔐 Private Direct Messages
+# 🔐 Private Direct Messages
 
 Direct messages use browser-side encryption.
 
-The basic model is:
+The basic flow is:
 
 ```text
 Plaintext Message
-       ↓
+       │
+       ▼
 Browser Web Crypto
-       ↓
+       │
+       ▼
 Encrypted Ciphertext
-       ↓
-Socket.IO / API
-       ↓
+       │
+       ▼
+Socket.IO / REST API
+       │
+       ▼
 Express API
-       ↓
+       │
+       ▼
 MongoDB
